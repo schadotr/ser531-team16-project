@@ -1,0 +1,50 @@
+version: '2.1'
+
+networks:
+  microservice:
+    driver: bridge
+
+services:
+  rabbitmq:
+    image: 'rabbitmq:latest'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:
+      - microservice
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./mongodb/database:/data/db
+    ports:
+      - 27016:27017
+    restart: unless-stopped
+    networks:
+      - microservice
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    # command: "ls -a"
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    networks:
+      - microservice
+
+  user:
+    build:
+      context: .
+      dockerfile: ./user/Dockerfile
+    # command: "ls -a"
+    container_name: user
+    ports:
+      - "8080:8080"
+    networks:
+      - microservice
+    restart: on-failure
