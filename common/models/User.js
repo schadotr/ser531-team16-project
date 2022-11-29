@@ -35,6 +35,7 @@ const User = mongooseConnector.model("user", userSchema);
 const validateData = (userDetails) => {
     const schema = JoiObject.object({
         name: JoiObject.string().required(),
+        username: JoiObject.string().required(),
         email: JoiObject.string().email().required(),
         password: JoiObject.string().required(),
     });

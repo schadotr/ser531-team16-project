@@ -16,18 +16,18 @@ const ROUTES = [
         }
     },
     {
-        url: '/api/service-2',
-        auth: false,
+        url: '/api/movie/*',
+        auth: true,
         creditCheck: false,
         rateLimit: {
             windowMs: 15 * 60 * 1000,
             max: 5
         },
         proxy: {
-            target: "http://localhost:8081",
+            target: "http://movie:8081",
             changeOrigin: true,
             pathRewrite: {
-                [`^/api`]: '/',
+                [`^/api/movie`]: '/',
             },
         }
     }

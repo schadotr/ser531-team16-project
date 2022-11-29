@@ -1,9 +1,6 @@
 const expressObject = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
 const app = expressObject();
 const bcrypt = require('bcryptjs');
-const CryptoJS = require('crypto-js');
 const connection = require("./db/database");
 const sendToQueue = require('./queue/sender');
 const passwordValidator = require('password-validator');
@@ -24,6 +21,7 @@ schema
 
 
 var User = require('./models/User').User;
+var validateData = require('./models/User').validateData;
 var Otp = require('./models/otp');
 
 app.use(expressObject.json());
@@ -135,7 +133,13 @@ app.post('/signup', (request, response) => {
     const name = request.body.name;
     const email = request.body.email;
     const password = request.body.password;
+    const { error } = validateData(request.body);
+    if (error) {
+        console.log('here');
+        return response.status(400).send("error");
+    }
     if (schema.validate(password)) {
+        const sr = 10;
         bcrypt.genSalt(sr, function (err, salt) {
             if (err) {
                 return response.send({ message: "error" });
@@ -166,5 +170,32 @@ app.post('/signup', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
-
+    const username = request.body.username;
+    const password = request.body.password;
+    User.find({ username: username }, (err, user) => {
+        if (err) {
+            return response.send({ message: "error" });
+        } else {
+            if (user.length == 1) {
+                bcrypt.compare(password, user[0].password, (err, r) => {
+                    if (err) {
+                        return response.send({ message: "error" });
+                    } else {
+                        if (r == true) {
+                            const token = user[0].generateAuthenticationToken();
+                            response.set({
+                                'content-type': 'application/json',
+                                'x-auth-token': token
+                            });
+                            return response.send({ message: "valid" });
+                        } else {
+                            return response.send({ message: "invalid" });
+                        }
+                    }
+                });
+            } else {
+                return response.send({ message: "invalid" });
+            }
+        }
+    });
 });

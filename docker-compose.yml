@@ -48,3 +48,15 @@ services:
     networks:
       - microservice
     restart: on-failure
+
+  movie:
+    build:
+      context: .
+      dockerfile: ./movie-recommender/Dockerfile
+    # command: "ls -a"
+    container_name: movie
+    ports:
+      - "8081:8081"
+    networks:
+      - microservice
+    restart: on-failure
