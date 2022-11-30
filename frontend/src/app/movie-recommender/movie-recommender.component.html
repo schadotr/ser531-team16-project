@@ -1,0 +1,87 @@
+
+
+  <div>
+
+  </div>
+
+  <div class="float-container">
+
+    <div class='float-child'>
+      <div class="row-parent">
+        <mat-checkbox class="row-child" [(ngModel)]="actorNameChbox" name="actorNameChbox"
+          (ngModelChange)="checkUncheck('actorName', actorNameChbox)">Actor name</mat-checkbox>
+        <mat-form-field class="row-child">
+          <mat-label>Actor</mat-label>
+          <input matInput name="actorName" placeholder="Enter Actor name" [(ngModel)]="actorName"
+            [disabled]="!actorNameChbox" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class='float-child'>
+      <div class="row-parent">
+        <mat-checkbox class="row-child" [(ngModel)]="directorChbox" name="directorChbox"
+          (ngModelChange)="checkUncheck('director', directorChbox)">Director name</mat-checkbox>
+        <mat-form-field class="row-child">
+          <mat-label>Director</mat-label>
+          <input matInput name="director" placeholder="Enter director name" [(ngModel)]="director" [disabled]="!directorChbox" />
+        </mat-form-field>
+        </div>
+    </div>
+
+    <div class='float-child'>
+      <div class="row-parent">
+        <mat-checkbox class="row-child" [(ngModel)]="movieNameChbox" name="movieNameChbox"
+          (ngModelChange)="checkUncheck('movieName', movieNameChbox)">Movie name</mat-checkbox>
+        <mat-form-field class="row-child">
+          <mat-label>Movie name</mat-label>
+          <input matInput name="movierName" placeholder="Enter movie name" [(ngModel)]="movieName" [disabled]="!movieNameChbox" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class='float-child'>
+      <div class="row-parent">
+        <mat-checkbox class="row-child" [(ngModel)]="producerChbox" name="producerChbox"
+          (ngModelChange)="checkUncheck('producerName', producerChbox)">Producer name</mat-checkbox>
+        <mat-form-field class="row-child">
+          <mat-label>Producer name</mat-label>
+          <input matInput name="producerName"  placeholder="Enter producer name"[(ngModel)]="producerName" [disabled]="!producerChbox" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class='float-child'>
+      <div class="row-parent">
+        <mat-checkbox class="row-child" [(ngModel)]="genreChbox" name="genreChbox" (ngModelChange)="checkUncheck('genres', genreChbox)">
+          Genre</mat-checkbox>
+        <mat-form-field appearance="fill" class="row-child">
+          <mat-label>Genres</mat-label>
+          <mat-select [(ngModel)]="genres" name="selectionGenre" multiple [disabled]="!genreChbox">
+            <mat-option *ngFor="let genre of genreList" [value]="genre">{{genre}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left : 45%">
+  <button mat-raised-button color="primary" (click)="applyFilters()"
+          [disabled]="(!actorNameChbox || actorName === '') && (!directorChbox || director === '') && (!movieNameChbox || movieName === '') && (!producerChbox || producerName === '') && (!genreChbox || !genres.length)">Apply
+          Filters
+  </button>
+  </div>
+
+  <br/>
+  <ng-container [style.display]="filtersApplied ? '' : 'none'">
+
+    <svg id="graphContainer" style="float:left" [attr.width]=" movieClicked ? '70%' : '100%'" height="100%"
+      class="associations " #graphContainer>
+    </svg>
+
+    <div *ngIf="movieClicked" style="width: 29%; height: 100%; float: right; padding: 5px; border: 2px solid black;">
+      Movie Id = {{ movieClicked ? clickedMovieDetails.id : 0}}
+    </div>
+
+  </ng-container>

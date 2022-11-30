@@ -4,3 +4,5 @@ api-gateway/middleware
 api-gateway/models
 mongodb/
 ml-model/ml-model
+.angular/
+.DS_Store

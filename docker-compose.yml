@@ -19,7 +19,7 @@ services:
       - PUID=1000
       - PGID=1000
     volumes:
-      - ./mongodb/database:/data/db
+      - ./backend/mongodb/database:/data/db
     ports:
       - 27016:27017
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
 
   api-gateway:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./api-gateway/Dockerfile
     # command: "ls -a"
     container_name: api-gateway
@@ -39,7 +39,7 @@ services:
 
   user:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./user/Dockerfile
     # command: "ls -a"
     container_name: user
@@ -51,12 +51,26 @@ services:
 
   movie:
     build:
-      context: .
+      context: ./backend
       dockerfile: ./movie-recommender/Dockerfile
     # command: "ls -a"
     container_name: movie
     ports:
       - "8081:8081"
+    networks:
+      - microservice
+    restart: on-failure
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: frontend
+    ports:
+      - "8002:4200"
+    volumes:
+      - ./frontend:/frontend
+      - ./frontend/node_modules:/frontend/node_modules
     networks:
       - microservice
     restart: on-failure
