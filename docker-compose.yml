@@ -5,6 +5,16 @@ networks:
     driver: bridge
 
 services:
+  fuseki:
+    image: secoresearch/fuseki
+    environment:
+      - ADMIN_PASSWORD=admin123
+    volumes:
+      - ./fuseki:/fuseki-base
+    ports:
+      - "3030:3030"
+    networks:
+      - microservice
   rabbitmq:
     image: 'rabbitmq:latest'
     ports:
@@ -30,7 +40,6 @@ services:
     build:
       context: ./backend
       dockerfile: ./api-gateway/Dockerfile
-    # command: "ls -a"
     container_name: api-gateway
     ports:
       - "3000:3000"
@@ -41,7 +50,6 @@ services:
     build:
       context: ./backend
       dockerfile: ./user/Dockerfile
-    # command: "ls -a"
     container_name: user
     ports:
       - "8080:8080"
@@ -53,24 +61,36 @@ services:
     build:
       context: ./backend
       dockerfile: ./movie-recommender/Dockerfile
-    # command: "ls -a"
     container_name: movie
     ports:
       - "8081:8081"
     networks:
       - microservice
     restart: on-failure
-
-  frontend:
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
-    container_name: frontend
-    ports:
-      - "8002:4200"
-    volumes:
-      - ./frontend:/frontend
-      - ./frontend/node_modules:/frontend/node_modules
-    networks:
-      - microservice
-    restart: on-failure
+  # ml-model:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ./ml-model/ml-script/Dockerfile
+  #   container_name: ml-model
+  #   networks:
+  #     - microservice
+  # predict-review:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ./ml-model/predict-sentiment/Dockerfile
+  #   container_name: predict-review
+  #   networks:
+  #     - microservice
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: ./frontend/Dockerfile
+  #   container_name: frontend
+  #   ports:
+  #     - "8002:4200"
+  #   volumes:
+  #     - ./frontend:/frontend
+  #     - ./frontend/node_modules:/frontend/node_modules
+  #   networks:
+  #     - microservice
+  #   restart: on-failure

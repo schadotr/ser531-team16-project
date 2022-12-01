@@ -6,3 +6,5 @@ mongodb/
 ml-model/ml-model
 .angular/
 .DS_Store
+fuseki/
+*.sav
