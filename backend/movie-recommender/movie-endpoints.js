@@ -81,9 +81,11 @@ app.get('/movie-by-actor', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX act: <http://www.semanticweb.org/ser531-team16/actor#>
-    SELECT DISTINCT ?MovieID ?Name ?knownfor WHERE {
+    SELECT ?ActorID ?Name ?MovieID ?knownfor WHERE {
       ?actID a act:ActorID.
       ?actID act:hasActorID ?ActorID.
+      ?actID act:hasActedIn ?MID.
+      ?MID act:hasMovieID ?MovieID.
       ?actID act:hasPrimaryName ?Name.
       FILTER(?Name = "${actorName}").
       ?actID act:knownFor ?knownfor.
@@ -130,9 +132,11 @@ app.get('/movie-by-director', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX dir: <http://www.semanticweb.org/ser531-team16/director#>
-    SELECT DISTINCT ?DirectorID ?Name ?knownfor WHERE {
+    SELECT ?DirectorID ?Name ?movieID ?knownfor WHERE {
       ?dirID a dir:DirectorID.
       ?dirID dir:hasID ?DirectorID.
+      ?dirID dir:hasDirected ?MID.
+      ?MID dir:hasMovieID ?MovieID.
       ?dirID dir:hasPrimaryName ?Name.
       FILTER(?Name = ${directorName}).
       ?dirID dir:knownFor ?knownfor.
@@ -179,9 +183,11 @@ app.get('/movie-by-producer', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX prod: <http://www.semanticweb.org/ser531-team16/producer#>
-    SELECT DISTINCT ?ProducerID ?Name ?knownfor WHERE {
+    SELECT ?ProducerID ?MovieID ?Name ?knownfor WHERE {
       ?prodID a prod:ProducerID.
       ?prodID prod:hasID ?ProducerID.
+      ?prodID prod:hasProduced ?MID.
+      ?MID prod:hasMovieID ?MovieID.
       ?prodID prod:hasPrimaryName ?Name.
       FILTER(?Name = ${producerName}).
       ?prodID prod:knownFor ?knownfor.
@@ -228,9 +234,11 @@ app.get('/movie-by-writer', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX wri: <http://www.semanticweb.org/ser531-team16/writer#>
-    SELECT DISTINCT ?WriterID ?Name ?knownfor WHERE {
+    SELECT DISTINCT ?WriterID ?Name ?MovieID ?knownfor WHERE {
       ?wriID a wri:WriterID.
       ?wriID wri:hasID ?WriterID.
+      ?wriID wri:hasWritten ?MID.
+      ?MID wri:hasMovieID ?MovieID.
       ?wriID wri:hasPrimaryName ?Name.
       FILTER(?Name = ${writerName}).
       ?wriID wri:knownFor ?knownfor.
