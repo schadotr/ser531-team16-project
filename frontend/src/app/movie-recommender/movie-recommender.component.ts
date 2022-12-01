@@ -1,5 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import * as d3 from 'd3';
+import { take } from 'rxjs';
+import { CommonService } from '../services/common.service';
 
 @Component({
   selector: 'app-movie-recommender',
@@ -8,8 +11,11 @@ import * as d3 from 'd3';
 })
 export class MovieRecommenderComponent implements OnInit {
 
-  constructor() { }
+  constructor(private commonService: CommonService, private router: Router) { }
   ngOnInit(): void {
+    if (this.commonService.token === "") {
+      this.router.navigate(['login'])
+    }
     // throw new Error('Method not implemented.');
   }
 
@@ -40,7 +46,7 @@ export class MovieRecommenderComponent implements OnInit {
   genres = [];
   genreList = ["Action", "Adventure", "Drama", "Fantasy", "Sci-fi"];
   movieClicked = false;
-  clickedMovieDetails = { id : 0};
+  clickedMovieDetails = { id: 0 };
 
 
   // mouse event vars
@@ -55,11 +61,11 @@ export class MovieRecommenderComponent implements OnInit {
   lastKeyDown = -1;
 
   nodeList = {
-	'0' : ['1'],
-	'1' : ['2', '3', '4'],
-  '3' : ['7'],
-	'2' : ['5', '6'],
-	'6' : ['2']
+    '0': ['1'],
+    '1': ['2', '3', '4'],
+    '3': ['7'],
+    '2': ['5', '6'],
+    '6': ['2']
   }
   nodes = [
     { id: 0, reflexive: false },
@@ -76,18 +82,24 @@ export class MovieRecommenderComponent implements OnInit {
 
   pastLinks = {};
 
-  checkUncheck(property, actorNameChbox){
-    if(!actorNameChbox){
-      if(property === 'genres'){
+  checkUncheck(property, actorNameChbox) {
+    if (!actorNameChbox) {
+      if (property === 'genres') {
         this[property] = []
       }
-      else{
+      else {
         this[property] = ""
       }
     }
 
   }
 
+
+  backendCall() {
+    this.commonService.movieRecommenderCall(this.movieName).pipe(take(1)).subscribe((response) => {
+      console.log(response);
+    })
+  }
 
   applyFilters() {
     this.filtersApplied = true;
@@ -163,7 +175,7 @@ export class MovieRecommenderComponent implements OnInit {
 
     // app starts here
     this.svg.on('mousedown', (dataItem, value, source) => this.mousedown(dataItem, value, source))
-    //   .on('mousemove', (dataItem) => this.mousemove(dataItem))
+      //   .on('mousemove', (dataItem) => this.mousemove(dataItem))
       .on('mouseup', (dataItem) => this.mouseup(dataItem));
     // d3.select(window)
     //   .on('keydown', this.keydown)
@@ -238,7 +250,7 @@ export class MovieRecommenderComponent implements OnInit {
     this.circle.selectAll('circle')
       .style('fill', (d) => (d === this.selectedNode) ? d3.rgb(this.colors(d.id)).brighter().toString() : this.colors(d.id))
       .classed('reflexive', (d) => d.reflexive)
-	  .classed('collapsed', (d) =>  !this.visited[d.id] && this.nodeList[d.id] && this.nodeList[d.id].length > 0 );
+      .classed('collapsed', (d) => !this.visited[d.id] && this.nodeList[d.id] && this.nodeList[d.id].length > 0);
 
     // remove old nodes
     this.circle.exit().remove();
@@ -333,14 +345,14 @@ export class MovieRecommenderComponent implements OnInit {
     this.force.alphaTarget(0.3).restart();
   }
 
-  setClickedMovieDetails(movieId){
+  setClickedMovieDetails(movieId) {
     this.clickedMovieDetails = this.nodes.filter((node) => node.id === movieId)[0];
   }
 
   mousedown(dataItem: any, value: any, source: any) {
-	dataItem;
-	value;
-	source;
+    dataItem;
+    value;
+    source;
     // because :active only works in WebKit?
     this.svg.classed('active', true);
 
@@ -348,101 +360,101 @@ export class MovieRecommenderComponent implements OnInit {
 
     // insert new node at point
     const point = d3.mouse(d3.event.currentTarget);
-    if(this.mousedownNode){
+    if (this.mousedownNode) {
       this.movieClicked = true;
       this.setClickedMovieDetails(this.mousedownNode.id);
     }
     // const point = d3.mouse(this);
-	if(this.mousedownNode && this.nodeList[this.mousedownNode.id] && !this.visited[this.mousedownNode.id]){
+    if (this.mousedownNode && this.nodeList[this.mousedownNode.id] && !this.visited[this.mousedownNode.id]) {
 
-    for(let n of this.nodeList[this.mousedownNode.id]){
-      let existingNodeList = this.nodes.filter((node) => node.id === parseInt(n));
-      if(existingNodeList && existingNodeList.length > 0 && (!this.pastLinks[this.mousedownNode.id] || this.pastLinks[this.mousedownNode.id].indexOf(parseInt(n)) === -1)){
-        let link = {
-          source : this.mousedownNode,
-          target : existingNodeList[0],
-          left: false,
-          right: true
+      for (let n of this.nodeList[this.mousedownNode.id]) {
+        let existingNodeList = this.nodes.filter((node) => node.id === parseInt(n));
+        if (existingNodeList && existingNodeList.length > 0 && (!this.pastLinks[this.mousedownNode.id] || this.pastLinks[this.mousedownNode.id].indexOf(parseInt(n)) === -1)) {
+          let link = {
+            source: this.mousedownNode,
+            target: existingNodeList[0],
+            left: false,
+            right: true
+          }
+          this.links.push(link);
+          let node = existingNodeList[0];
+          if (!this.pastLinks[node.id]) {
+            this.pastLinks[node.id] = [];
+          }
+          this.pastLinks[node.id].push(this.mousedownNode.id)
+          if (this.pastLinks[this.mousedownNode.id]) {
+            this.pastLinks[node.id] = this.pastLinks[node.id].concat(this.pastLinks[this.mousedownNode.id]);
+          }
         }
-        this.links.push(link);
-        let node = existingNodeList[0];
-        if(!this.pastLinks[node.id]){
-          this.pastLinks[node.id] = [];
-        }
-        this.pastLinks[node.id].push(this.mousedownNode.id)
-        if(this.pastLinks[this.mousedownNode.id]){
-          this.pastLinks[node.id] = this.pastLinks[node.id].concat(this.pastLinks[this.mousedownNode.id]);
+        else if (!this.pastLinks[this.mousedownNode.id] || this.pastLinks[this.mousedownNode.id].indexOf(parseInt(n)) === -1) {
+          let node = { id: parseInt(n), reflexive: false, x: point[0], y: point[1] };
+          this.nodes.push(node);
+          let link = {
+            source: this.mousedownNode,
+            target: node,
+            left: false,
+            right: true
+          }
+          this.links.push(link);
+          if (!this.pastLinks[node.id]) {
+            this.pastLinks[node.id] = [];
+          }
+          this.pastLinks[node.id].push(this.mousedownNode.id)
+          if (this.pastLinks[this.mousedownNode.id]) {
+            this.pastLinks[node.id] = this.pastLinks[node.id].concat(this.pastLinks[this.mousedownNode.id]);
+          }
+
         }
       }
-      else if(!this.pastLinks[this.mousedownNode.id] || this.pastLinks[this.mousedownNode.id].indexOf(parseInt(n)) === -1){
-        let node = { id: parseInt(n), reflexive: false, x: point[0], y: point[1] };
-        this.nodes.push(node);
-        let link = {
-          source : this.mousedownNode,
-          target : node,
-          left: false,
-          right: true
-        }
-        this.links.push(link);
-        if(!this.pastLinks[node.id]){
-          this.pastLinks[node.id] = [];
-        }
-        this.pastLinks[node.id].push(this.mousedownNode.id)
-        if(this.pastLinks[this.mousedownNode.id]){
-          this.pastLinks[node.id] = this.pastLinks[node.id].concat(this.pastLinks[this.mousedownNode.id]);
-        }
+      this.visited[this.mousedownNode.id] = true;
 
+    }
+    else if (this.mousedownNode && this.visited[this.mousedownNode.id]) {
+      this.movieClicked = true;
+      let id = this.mousedownNode.id
+      this.visited[id] = false;
+      // for(let i=this.nodeList[id].length-1; i>=0; i--){
+      // 	let list = this.nodeList[id][i];
+      // 	if(list){
+
+      // 	}
+      // }
+
+      for (let j = Object.keys(this.pastLinks).length - 1; j >= 0; j--) {
+        let node = Object.keys(this.pastLinks)[j];
+        if (this.pastLinks[node].includes(id) || this.pastLinks[node].includes(id.toString())) {
+          let x = this.nodes.findIndex((ss) => ss.id === parseInt(node))
+          let y = this.nodes[x];
+
+          if (x !== -1) {
+            this.visited[y.id] = false;
+            this.nodes.splice(x, 1);
+          }
+          for (let i = this.links.length - 1; i >= 0; i--) {
+            let link = this.links[i];
+            if (link.source.id === y.id || link.target.id === y.id) {
+              this.links.splice(i, 1);
+            }
+          }
+          delete this.pastLinks[node];
+
+        }
       }
     }
-    this.visited[this.mousedownNode.id] = true;
-
-	}
-	else if(this.mousedownNode && this.visited[this.mousedownNode.id]){
-    this.movieClicked = true;
-		let id = this.mousedownNode.id
-		this.visited[id] = false;
-		// for(let i=this.nodeList[id].length-1; i>=0; i--){
-		// 	let list = this.nodeList[id][i];
-		// 	if(list){
-
-		// 	}
-		// }
-
-		for(let j=Object.keys(this.pastLinks).length-1; j>=0; j--){
-			let node = Object.keys(this.pastLinks)[j];
-			if(this.pastLinks[node].includes(id) || this.pastLinks[node].includes(id.toString())){
-				let x = this.nodes.findIndex((ss) => ss.id === parseInt(node))
-				let y = this.nodes[x];
-
-				if(x !== -1){
-					this.visited[y.id] = false;
-					this.nodes.splice(x , 1);
-				}
-				for(let i=this.links.length-1; i>=0; i--){
-					let link = this.links[i];
-					if(link.source.id === y.id || link.target.id === y.id){
-						this.links.splice(i, 1);
-					}
-				}
-				delete this.pastLinks[node];
-
-			}
-		}
-	}
 
     this.restart();
   }
 
 
 
-//   mousemove(source: any) {
-//     if (!this.mousedownNode) return;
+  //   mousemove(source: any) {
+  //     if (!this.mousedownNode) return;
 
-//     // update drag line
-//     this.dragLine.attr('d', `M${this.mousedownNode.x},${this.mousedownNode.y}L${d3.mouse(d3.event.currentTarget)[0]},${d3.mouse(d3.event.currentTarget)[1]}`);
+  //     // update drag line
+  //     this.dragLine.attr('d', `M${this.mousedownNode.x},${this.mousedownNode.y}L${d3.mouse(d3.event.currentTarget)[0]},${d3.mouse(d3.event.currentTarget)[1]}`);
 
-//     this.restart();
-//   }
+  //     this.restart();
+  //   }
 
   mouseup(source: any) {
     if (this.mousedownNode) {
@@ -459,79 +471,79 @@ export class MovieRecommenderComponent implements OnInit {
     this.resetMouseVars();
   }
 
-//   spliceLinksForNode(node) {
-//     const toSplice = this.links.filter((l) => l.source === node || l.target === node);
-//     for (const l of toSplice) {
-//       this.links.splice(this.links.indexOf(l), 1);
-//     }
-//   }
+  //   spliceLinksForNode(node) {
+  //     const toSplice = this.links.filter((l) => l.source === node || l.target === node);
+  //     for (const l of toSplice) {
+  //       this.links.splice(this.links.indexOf(l), 1);
+  //     }
+  //   }
 
-//   keydown() {
-//     d3.event.preventDefault();
+  //   keydown() {
+  //     d3.event.preventDefault();
 
-//     if (this.lastKeyDown !== -1) return;
-//     this.lastKeyDown = d3.event.keyCode;
+  //     if (this.lastKeyDown !== -1) return;
+  //     this.lastKeyDown = d3.event.keyCode;
 
-//     // ctrl
-//     if (d3.event.keyCode === 17) {
-//       this.circle.call(this.drag);
-//       this.svg.classed('ctrl', true);
-//     }
+  //     // ctrl
+  //     if (d3.event.keyCode === 17) {
+  //       this.circle.call(this.drag);
+  //       this.svg.classed('ctrl', true);
+  //     }
 
-//     if (!this.selectedNode && !this.selectedLink) return;
+  //     if (!this.selectedNode && !this.selectedLink) return;
 
-//     switch (d3.event.keyCode) {
-//       case 8: // backspace
-//       case 46: // delete
-//         if (this.selectedNode) {
-//           this.nodes.splice(this.nodes.indexOf(this.selectedNode), 1);
-//           this.spliceLinksForNode(this.selectedNode);
-//         } else if (this.selectedLink) {
-//           this.links.splice(this.links.indexOf(this.selectedLink), 1);
-//         }
-//         this.selectedLink = null;
-//         this.selectedNode = null;
-//         this.restart();
-//         break;
-//       case 66: // B
-//         if (this.selectedLink) {
-//           // set link direction to both left and right
-//           this.selectedLink.left = true;
-//           this.selectedLink.right = true;
-//         }
-//         this.restart();
-//         break;
-//       case 76: // L
-//         if (this.selectedLink) {
-//           // set link direction to left only
-//           this.selectedLink.left = true;
-//           this.selectedLink.right = false;
-//         }
-//         this.restart();
-//         break;
-//       case 82: // R
-//         if (this.selectedNode) {
-//           // toggle node reflexivity
-//           this.selectedNode.reflexive = !this.selectedNode.reflexive;
-//         } else if (this.selectedLink) {
-//           // set link direction to right only
-//           this.selectedLink.left = false;
-//           this.selectedLink.right = true;
-//         }
-//         this.restart();
-//         break;
-//     }
-//   }
+  //     switch (d3.event.keyCode) {
+  //       case 8: // backspace
+  //       case 46: // delete
+  //         if (this.selectedNode) {
+  //           this.nodes.splice(this.nodes.indexOf(this.selectedNode), 1);
+  //           this.spliceLinksForNode(this.selectedNode);
+  //         } else if (this.selectedLink) {
+  //           this.links.splice(this.links.indexOf(this.selectedLink), 1);
+  //         }
+  //         this.selectedLink = null;
+  //         this.selectedNode = null;
+  //         this.restart();
+  //         break;
+  //       case 66: // B
+  //         if (this.selectedLink) {
+  //           // set link direction to both left and right
+  //           this.selectedLink.left = true;
+  //           this.selectedLink.right = true;
+  //         }
+  //         this.restart();
+  //         break;
+  //       case 76: // L
+  //         if (this.selectedLink) {
+  //           // set link direction to left only
+  //           this.selectedLink.left = true;
+  //           this.selectedLink.right = false;
+  //         }
+  //         this.restart();
+  //         break;
+  //       case 82: // R
+  //         if (this.selectedNode) {
+  //           // toggle node reflexivity
+  //           this.selectedNode.reflexive = !this.selectedNode.reflexive;
+  //         } else if (this.selectedLink) {
+  //           // set link direction to right only
+  //           this.selectedLink.left = false;
+  //           this.selectedLink.right = true;
+  //         }
+  //         this.restart();
+  //         break;
+  //     }
+  //   }
 
-//   keyup() {
-//     this.lastKeyDown = -1;
+  //   keyup() {
+  //     this.lastKeyDown = -1;
 
-//     // ctrl
-//     if (d3.event.keyCode === 17) {
-//       this.circle.on('.drag', null);
-//       this.svg.classed('ctrl', false);
-//     }
-//   }
+  //     // ctrl
+  //     if (d3.event.keyCode === 17) {
+  //       this.circle.on('.drag', null);
+  //       this.svg.classed('ctrl', false);
+  //     }
+  //   }
 
 
 }

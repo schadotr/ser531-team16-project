@@ -5,6 +5,7 @@ const connection = require("./db/database");
 const sendToQueue = require('./queue/sender');
 const passwordValidator = require('password-validator');
 const schema = new passwordValidator();
+const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -25,6 +26,12 @@ var validateData = require('./models/User').validateData;
 var Otp = require('./models/otp');
 
 app.use(expressObject.json());
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+    optionSuccessStatus: 200,
+}
+app.use(cors(corsOptions));
 // ===========================
 //  Running Port.
 // ===========================
@@ -185,9 +192,8 @@ app.post('/login', (request, response) => {
                             const token = user[0].generateAuthenticationToken();
                             response.set({
                                 'content-type': 'application/json',
-                                'x-auth-token': token
                             });
-                            return response.send({ message: "valid" });
+                            return response.send({ message: "valid", 'x-auth-token': token });
                         } else {
                             return response.send({ message: "invalid" });
                         }

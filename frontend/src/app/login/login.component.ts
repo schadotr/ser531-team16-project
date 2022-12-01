@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Route, Router } from '@angular/router';
+import { take } from 'rxjs';
 import { CommonService } from '../services/common.service';
 
 @Component({
@@ -8,7 +10,7 @@ import { CommonService } from '../services/common.service';
 })
 export class LoginComponent implements OnInit {
 
-  constructor(public commonService: CommonService) { }
+  constructor(public commonService: CommonService, public router: Router) { }
 
   otpVerification = false;
   userName = "";
@@ -51,11 +53,15 @@ export class LoginComponent implements OnInit {
 
 
   finalLogin() {
+    this.commonService.loginSubscription({ "username": this.userName, "password": this.password }).pipe(take(1)).subscribe((response) => {
+      console.log('hheelloo');
+      this.router.navigate(['recommender'])
+    })
 
   }
 
   finalSignUp() {
-    fetch('http:')
+    // fetch('http:')
   }
 
   finalValidate() {

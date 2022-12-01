@@ -15,58 +15,58 @@ services:
       - "3030:3030"
     networks:
       - microservice
-  rabbitmq:
-    image: 'rabbitmq:latest'
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-    networks:
-      - microservice
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - ./backend/mongodb/database:/data/db
-    ports:
-      - 27016:27017
-    restart: unless-stopped
-    networks:
-      - microservice
+  # rabbitmq:
+  #   image: 'rabbitmq:latest'
+  #   ports:
+  #     - '5672:5672'
+  #     - '15672:15672'
+  #   networks:
+  #     - microservice
+  # mongodb:
+  #   image: mongo
+  #   container_name: mongodb
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #   volumes:
+  #     - ./backend/mongodb/database:/data/db
+  #   ports:
+  #     - 27016:27017
+  #   restart: unless-stopped
+  #   networks:
+  #     - microservice
 
-  api-gateway:
-    build:
-      context: ./backend
-      dockerfile: ./api-gateway/Dockerfile
-    container_name: api-gateway
-    ports:
-      - "3000:3000"
-    networks:
-      - microservice
+  # api-gateway:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ./api-gateway/Dockerfile
+  #   container_name: api-gateway
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - microservice
 
-  user:
-    build:
-      context: ./backend
-      dockerfile: ./user/Dockerfile
-    container_name: user
-    ports:
-      - "8080:8080"
-    networks:
-      - microservice
-    restart: on-failure
+  # user:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ./user/Dockerfile
+  #   container_name: user
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - microservice
+  #   restart: on-failure
 
-  movie:
-    build:
-      context: ./backend
-      dockerfile: ./movie-recommender/Dockerfile
-    container_name: movie
-    ports:
-      - "8081:8081"
-    networks:
-      - microservice
-    restart: on-failure
+  # movie:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: ./movie-recommender/Dockerfile
+  #   container_name: movie
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - microservice
+  #   restart: on-failure
   # ml-model:
   #   build:
   #     context: ./backend
