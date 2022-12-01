@@ -25,15 +25,28 @@ console.log("Server is listening port 8080 !!!!");
 app.get('/movie-by-title', (request, response) => {
   const movieTitle = request.query.movieTitle;
   console.log(movieTitle);
-  var query = querystring.stringify({ "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#> SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE { ?movID a mov:MovieID. ?movID mov:hasPrimaryTitle ?pt. ?pt mov:isPrimaryTitle ?Title. FILTER(?Title = "${movieTitle}"^^xsd:string). ?movID mov:hasGenre ?g. ?g mov:isGenre ?Genre. ?movID mov:isAdult ?Adult. ?movID mov:hasReleaseYear ?ry. ?ry mov:isReleaseYear ?Year. ?movID mov:hasRating ?R. ?R mov:isRating ?Rating. ?movID mov:hasRunTime ?rt. ?rt mov:isRunTime ?RunTime. ?movID mov:hasVotes ?v. ?v mov:isVotes ?Votes. ?movID mov:hasSecondaryTitle ?st. ?st mov:isSecondaryTitle ?OriginalTitle. } ORDER BY DESC(?Rating) LIMIT 100` });
+  var query = querystring.stringify({ "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#> SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE { ?movID a mov:MovieID. ?movID mov:hasPrimaryTitle ?pt. ?pt mov:isPrimaryTitle ?Title. FILTER(STRSTARTS(?Title , "${movieTitle}"^^xsd:string)). ?movID mov:hasGenre ?g. ?g mov:isGenre ?Genre. ?movID mov:isAdult ?Adult. ?movID mov:hasReleaseYear ?ry. ?ry mov:isReleaseYear ?Year. ?movID mov:hasRating ?R. ?R mov:isRating ?Rating. ?movID mov:hasRunTime ?rt. ?rt mov:isRunTime ?RunTime. ?movID mov:hasVotes ?v. ?v mov:isVotes ?Votes. ?movID mov:hasSecondaryTitle ?st. ?st mov:isSecondaryTitle ?OriginalTitle. } ORDER BY DESC(?Rating) LIMIT 100` });
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/movie-management/?` + query }, function (error, res, body) {
     return response.send(body);
   });
 });
 
 app.get('/movie-by-genre', (request, response) => {
-  const genreList = request.query.genres;
-  console.log(genreList)
+  var genreList = request.query.genres;
+  var typeOfQuery = request.query.type;
+
+  genreList = genreList.split(',');
+  var queryList = [];
+  genreList.forEach((genre) => {
+    queryList.push(`{?movID mov:hasGenre ?g.
+        ?g mov:isGenre ?Genre.
+        FILTER(CONTAINS(lcase(str(?Genre)), "${genre}"^^xsd:string)).}`)
+  });
+  if (typeOfQuery == 'or') {
+    queryList = queryList.join([separator = ' UNION ']);
+  } else {
+    queryList = queryList.join([separator = ' . ']);
+  }
   var query = querystring.stringify({
     "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -43,13 +56,7 @@ app.get('/movie-by-genre', (request, response) => {
       ?movID a mov:MovieID.
       ?movID mov:hasPrimaryTitle ?pt.
       ?pt mov:isPrimaryTitle ?Title.
-      {?movID mov:hasGenre ?g.
-      ?g mov:isGenre ?Genre.
-        FILTER(CONTAINS(?Genre, "${genreList}"^^xsd:string)).}
-      UNION
-      {?movID mov:hasGenre ?g.
-      ?g mov:isGenre ?Genre.
-        FILTER(CONTAINS(?Genre, "${genreList}"^^xsd:string)).}
+      ${queryList}
       ?movID mov:isAdult ?Adult.
       ?movID mov:hasReleaseYear ?ry.
       ?ry mov:isReleaseYear ?Year.
@@ -68,52 +75,52 @@ app.get('/movie-by-genre', (request, response) => {
 });
 
 app.get('/movie-by-actor', (request, response) => {
-  const actorName = request.body.actorName;
+  const actorName = request.query.actorName;
   var q = querystring.stringify({
     "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX act: <http://www.semanticweb.org/ser531-team16/actor#>
-    SELECT DISTINCT ?ActorID ?Name ?knownfor WHERE {
+    SELECT DISTINCT ?MovieID ?Name ?knownfor WHERE {
       ?actID a act:ActorID.
       ?actID act:hasActorID ?ActorID.
       ?actID act:hasPrimaryName ?Name.
-      FILTER(?Name = ${actorName}).
+      FILTER(?Name = "${actorName}").
       ?actID act:knownFor ?knownfor.
     } ORDER BY(?Name)`});
   var knownfor;
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/actor/?` + q }, function (error, res, body) {
-    knownfor = body.knownfor;
-  });
-  var query = querystring.stringify({
-    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
-    SELECT ?Title ?Movieid ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle ?Adult WHERE {
-      ?movID a mov:MovieID.
-      ?movID mov:isMovieID ?Movieid.
-      ?movID mov:hasPrimaryTitle ?pt.
-      ?pt mov:isPrimaryTitle ?Title.
-      FILTER(CONTAINS(${knownfor}^^xsd:string,?Movieid)).
-      ?movID mov:hasGenre ?g.
-      ?g mov:isGenre ?Genre.
-      ?movID mov:isAdult ?Adult.
-      ?movID mov:hasReleaseYear ?ry.
-      ?ry mov:isReleaseYear ?Year.
-      ?movID mov:hasRating ?R.
-      ?R mov:isRating ?Rating.
-      ?movID mov:hasRunTime ?rt.
-      ?rt mov:isRunTime ?RunTime.
-      ?movID mov:hasVotes ?v.
-      ?v mov:isVotes ?Votes.
-      ?movID mov:hasSecondaryTitle ?st.
-      ?st mov:isSecondaryTitle ?OriginalTitle.
-    } ORDER BY DESC(?Rating) LIMIT 100`});
-  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}/movie-management/?` + query }, function (error, res, body) {
     return response.send(body);
+    console.log(knownfor);
+    var query = querystring.stringify({
+      "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
+      SELECT ?Title ?Movieid ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle ?Adult WHERE {
+        ?movID a mov:MovieID.
+        ?movID mov:isMovieID ?Movieid.
+        ?movID mov:hasPrimaryTitle ?pt.
+        ?pt mov:isPrimaryTitle ?Title.
+        FILTER(CONTAINS(${knownfor}^^xsd:string,?Movieid)).
+        ?movID mov:hasGenre ?g.
+        ?g mov:isGenre ?Genre.
+        ?movID mov:isAdult ?Adult.
+        ?movID mov:hasReleaseYear ?ry.
+        ?ry mov:isReleaseYear ?Year.
+        ?movID mov:hasRating ?R.
+        ?R mov:isRating ?Rating.
+        ?movID mov:hasRunTime ?rt.
+        ?rt mov:isRunTime ?RunTime.
+        ?movID mov:hasVotes ?v.
+        ?v mov:isVotes ?Votes.
+        ?movID mov:hasSecondaryTitle ?st.
+        ?st mov:isSecondaryTitle ?OriginalTitle.
+      } ORDER BY DESC(?Rating) LIMIT 100`});
+    requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}/movie-management/?` + query }, function (error, res, body) {
+      return response.send(body);
+    });
   });
-  response.send("ok");
 });
 
 app.get('/movie-by-director', (request, response) => {
