@@ -36,6 +36,8 @@ export class MovieRecommenderComponent implements OnInit {
   filtersApplied = false;
   actorNameChbox = false;
   actorName = "";
+  writerNameChbox = false;
+  writerName = "";
   director = "";
   directorChbox = false;
   movieNameChbox = false;
@@ -49,6 +51,8 @@ export class MovieRecommenderComponent implements OnInit {
   clickedMovieDetails = { id: 0 };
   newGivenRating;
   ratingGiven = false;
+  type = "and";
+
 
   // mouse event vars
   selectedNode = null;
@@ -97,7 +101,57 @@ export class MovieRecommenderComponent implements OnInit {
 
 
   backendCall() {
-    this.commonService.movieRecommenderCall(this.movieName).pipe(take(1)).subscribe((response) => {
+    let url = "";
+    let data: any = {};
+
+    if (this.movieName !== '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-title";
+      data.movieTitle = this.movieName;
+    }
+    else if (this.movieName === '' && this.producerName !== '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-producer";
+      data.producerName = this.producerName;
+    }
+    else if (this.movieName === '' && this.producerName === '' && this.actorName !== '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-actor";
+      data.actorName = this.actorName;
+    }
+    else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director !== '' && this.writerName === '' && this.genres.length === 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-director";
+      data.directorName = this.director;
+
+    }
+    else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName !== '' && this.genres.length === 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-writer";
+      data.writerName = this.writerName;
+
+    }
+    else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length > 0) {
+      url = "http://api-gateway:3000/api/movie/movie-by-genre";
+      data.genres = this.genres.join(',');
+
+
+    }
+    else {
+      url = "http://api-gateway:3000/api/movie/movie-by-multiple-parameters";
+      this.movieName ? data.movieTitle = this.movieName : delete data.movieTitle;
+      this.producerName ? data.producerName = this.producerName : delete data.producerName;
+      this.actorName ? data.actorName = this.actorName : delete data.actorName;
+      this.director ? data.directorName = this.director : delete data.directorName;
+      this.writerName ? data.writerName = this.writerName : delete data.writerName;
+      this.genres.length > 0 ? data.genres = this.genres.join(',') : delete data.genres;
+
+
+    }
+
+
+    data.type = this.type;
+
+
+
+
+    // call -- pass url; data; type
+    this.commonService.movieRecommenderCall(url, data).pipe(take(1)).subscribe((response) => {
       console.log(response);
     })
   }

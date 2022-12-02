@@ -45,20 +45,20 @@ export class CommonService {
     }));
   }
 
-  movieRecommenderCall(userData): Observable<any> {
+  movieRecommenderCall(URL, userData): Observable<any> {
     debugger;
-    let url = "http://api-gateway:3000/api/movie/movie-by-title";
+    let url = URL;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json',
       "Access-Control-Allow-Credentials": "true",
       "x-auth-token": this.token
     });
-    let options = { headers: headers, params: { movieTitle: userData } };
+    let options = { headers: headers, params: userData };
     return this.http.get(url, options).pipe(switchMap((res: any) => {
       // val = '';
       console.log('res', res)
-      return of('')
+      return of(res);
       // if (res.message === 'valid') {
       //   this.token = res['x-auth-token'];
       //   return of(res);
