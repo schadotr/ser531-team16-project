@@ -232,7 +232,8 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   PREFIX act: <http://www.semanticweb.org/ser531-team16/actor#>
   PREFIX dir: <http://www.semanticweb.org/ser531-team16/director#>
   PREFIX prod: <http://www.semanticweb.org/ser531-team16/producer#>
-  SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE { `
+  PREFIX wri: <http://www.semanticweb.org/ser531-team16/writer#>
+  SELECT DISTINCT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE { `
   movieQuery.concat(`
     {?movID a mov:MovieID.
     ?movID mov:isMovieID ?Movieid. 
@@ -265,11 +266,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
         FILTER(CONTAINS(lcase(str(?Genre)), "${genre}"^^xsd:string)).}`)
   });
   generQueryList = generQueryList.join([separator = ' UNION ']);
-  genreQuery = `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-  PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
-  SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE {
+  genreQuery = `{
     ?movID a mov:MovieID.
     ?movID mov:hasPrimaryTitle ?pt.
     ?pt mov:isPrimaryTitle ?Title.
@@ -342,7 +339,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?dirID dir:hasDirected ?M.
     ?M dir:hasMovieID ?mid.
     ?dirID dir:knownFor ?knownfor2.
-    FILTER(?mid = Movieid).
+    FILTER(?mid = ?Movieid).
   }`
   if (directorName) {
     myQuery.concat(type);
