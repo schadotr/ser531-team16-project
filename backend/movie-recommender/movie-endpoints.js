@@ -453,3 +453,236 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     return response.send(body);
   });
 });
+
+app.get('/movie-by-rating', (request, response) => {
+  const rating = request.query.rating;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
+  SELECT ?Title ?Year ?MovieID ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE {
+    ?movID a mov:MovieID.
+    ?movID mov:isMovieID ?MovieID.
+    ?movID mov:hasPrimaryTitle ?pt.
+    ?pt mov:isPrimaryTitle ?Title.
+    ?movID mov:hasGenre ?g.
+    ?g mov:isGenre ?Genre.
+    ?movID mov:isAdult ?Adult.
+    ?movID mov:hasReleaseYear ?ry.
+    ?ry mov:isReleaseYear ?Year.
+    ?movID mov:hasRating ?R.
+    ?R mov:isRating ?Rating.
+    FILTER(?Rating >= "${rating}"). 
+    ?movID mov:hasRunTime ?rt.
+    ?rt mov:isRunTime ?RunTime.
+    ?movID mov:hasVotes ?v.
+    ?v mov:isVotes ?Votes.
+    ?movID mov:hasSecondaryTitle ?st.
+    ?st mov:isSecondaryTitle ?OriginalTitle.
+  } ORDER BY DESC(xsd:integer(?Votes)) LIMIT 100`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/movie-management/?` + query }, function (error, res, body) {
+    var movieDetails = JSON.parse(body).results.bindings;
+    var parsedMovieData = [];
+    movieDetails.forEach(movieData => {
+      parsedMovieData.push({
+        title: movieData.Title.value,
+        year: movieData.Year.value,
+        genres: movieData.Genre.value,
+        runtime: movieData.RunTime.value,
+        rating: movieData.Rating.value,
+        votes: movieData.Votes.value,
+        isAdult: movieData.Adult.value == 0 ? false : true,
+      });
+    });
+    response.send(parsedMovieData);
+  });
+});
+
+app.get('/actors-by-movie', (request, response) => {
+  const movieID = request.query.movieID;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX act: <http://www.semanticweb.org/ser531-team16/actor#>
+    SELECT DISTINCT ?ActorID ?MovieID ?Name ?BirthYear ?knownfor ?Professions WHERE {
+      ?actID a act:ActorID.
+      ?actID act:hasActorID ?ActorID.
+      ?actID act:hasPrimaryName ?Name.
+      ?actID act:hasBirthYear ?BirthYear.
+      OPTIONAL{
+        ?actID act:hasDeathYear ?DeathYear.
+      }
+      ?actID act:hasProf ?Professions.
+      ?actID act:knownFor ?knownfor.
+      ?actID act:hasActedIn ?mid.
+      ?mid act:hasMovieID ?MovieID.
+      FILTER(?MovieID = "${movieID}"^^xsd:string).
+    } ORDER BY(?Name)`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/actor/?` + query }, function (error, res, body) {
+    var actorDetails = JSON.parse(body).results.bindings;
+    var parsedActorData = [];
+    actorDetails.forEach(actorData => {
+      parsedActorData.push({
+        ActorID: actorData.ActorID.value,
+        Name: actorData.Name.value,
+        BirthYear: actorData.BirthYear.value,
+        Professions: actorData.Professions.value,
+        KnownFor: actorData.knownfor.value,
+      });
+    });
+    response.send(parsedActorData);
+  });
+});
+
+app.get('/directors-by-movie', (request, response) => {
+  const movieID = request.query.movieID;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dir: <http://www.semanticweb.org/ser531-team16/director#>
+    SELECT DISTINCT ?DirectorID ?Name ?BirthYear ?knownfor ?Professions WHERE {
+      ?dirID a dir:DirectorID.
+      ?dirID dir:hasID ?DirectorID.
+      ?dirID dir:hasPrimaryName ?Name.
+      
+      ?dirID dir:hasBirthYear ?BirthYear.
+      OPTIONAL{
+        ?dirID dir:hasDeathYear ?DeathYear.
+      }
+      ?dirID dir:hasProf ?Professions.
+      ?dirID dir:knownFor ?knownfor.
+      ?dirID dir:hasDirected ?mid.
+      ?mid dir:hasMovieID ?MovieID.
+      FILTER(?MovieID = "${movieID}"^^xsd:string).
+    } ORDER BY(?Name)`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/director/?` + query }, function (error, res, body) {
+    var directorDetails = JSON.parse(body).results.bindings;
+    var parsedDirectorData = [];
+    directorDetails.forEach(directorData => {
+      parsedDirectorData.push({
+        DirectorID: directorData.ActorID.value,
+        Name: directorData.Name.value,
+        BirthYear: directorData.BirthYear.value,
+        Professions: directorData.Professions.value,
+        KnownFor: directorData.knownfor.value,
+      });
+    });
+    response.send(parsedDirectorData);
+  });
+});
+
+
+app.get('/producers-by-movie', (request, response) => {
+  const movieID = request.query.movieID;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX prod: <http://www.semanticweb.org/ser531-team16/producer#>
+    SELECT DISTINCT ?ProducerID ?Name ?BirthYear ?knownfor ?Professions WHERE {
+      ?prodID a prod:ProducerID.
+      ?prodID prod:hasID ?ProducerID.
+      ?prodID prod:hasPrimaryName ?Name.
+      
+      ?prodID prod:hasBirthYear ?BirthYear.
+      OPTIONAL{
+        ?prodID prod:hasDeathYear ?DeathYear.
+      }
+      ?prodID prod:hasProf ?Professions.
+      ?prodID prod:knownFor ?knownfor.
+      ?prodID prod:hasProduced ?mid.
+      ?mid prod:hasMovieID ?MovieID.
+      FILTER(?MovieID = "${movieID}"^^xsd:string).
+    } ORDER BY(?Name)`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/producer/?` + query }, function (error, res, body) {
+    var producerDetails = JSON.parse(body).results.bindings;
+    var parsedProducerData = [];
+    producerDetails.forEach(producerData => {
+      parsedProducerData.push({
+        ProducerID: producerData.ProducerID.value,
+        Name: producerData.Name.value,
+        BirthYear: producerData.BirthYear.value,
+        Professions: producerData.Professions.value,
+        KnownFor: producerData.knownfor.value,
+      });
+    });
+    response.send(parsedProducerData);
+  });
+});
+
+
+app.get('/writers-by-movie', (request, response) => {
+  const movieID = request.query.movieID;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX wri: <http://www.semanticweb.org/ser531-team16/writer#>
+    SELECT DISTINCT ?ProducerID ?Name ?BirthYear ?knownfor ?Professions WHERE {
+      ?wriID a wri:WriterID.
+      ?wriID wri:hasID ?WriterID.
+      ?wriID wri:hasPrimaryName ?Name.
+      ?wriID wri:hasBirthYear ?BirthYear.
+      OPTIONAL{
+        ?wriID wri:hasDeathYear ?DeathYear.
+      }
+      ?wriID wri:hasProf ?Professions.
+      ?wriID wri:knownFor ?knownfor.
+      ?wriID wri:hasWritten ?mid.
+      ?mid wri:hasMovieID ?MovieID.
+      FILTER(?MovieID = "${movieID}"^^xsd:string).
+    } ORDER BY(?Name)`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/writer/?` + query }, function (error, res, body) {
+    var writerDetails = JSON.parse(body).results.bindings;
+    var parsedWriterData = [];
+    writerDetails.forEach(writerData => {
+      parsedWriterData.push({
+        WriterID: writerData.WriterID.value,
+        Name: writerData.Name.value,
+        BirthYear: writerData.BirthYear.value,
+        Professions: writerData.Professions.value,
+        KnownFor: writerData.knownfor.value,
+      });
+    });
+    response.send(parsedWriterData);
+  });
+});
+
+
+app.get('/reviews-by-movie', (request, response) => {
+  const movieID = request.query.movieID;
+  var query = querystring.stringify({
+    "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX rev: <http://www.semanticweb.org/ser531-team16/review#>
+    SELECT ?ReviewID ?Movie ?Reviewer ?Rating ?Summary ?SpoilerTag WHERE {
+      ?review a rev:Review.
+      ?review rev:hasReviewID ?ReviewID.
+      ?review rev:hasMovieName ?Movie.
+      FILTER(CONTAINS(?Movie,"${movieID}"^^xsd:string)).
+      ?review rev:hasRating ?r.
+      ?r rev:hasRatingValue ?Rating.
+      ?review rev:hasReviewerName ?Reviewer.
+      ?review rev:hasSummary ?Summary.
+      ?review rev:hasSpoilerTag ?SpoilerTag.
+    } ORDER BY(?ReviewID) LIMIT 100`});
+  requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/review/?` + query }, function (error, res, body) {
+    var reviewDetails = JSON.parse(body).results.bindings;
+    var parsedReviewData = [];
+    reviewDetails.forEach(reviewData => {
+      parsedReviewData.push({
+        ReviewID: reviewData.ReviewID.value,
+        MovieName: reviewData.Movie.value,
+        Reviewer: reviewData.Reviewer.value,
+        Rating: reviewData.Rating.value,
+        Summary: reviewData.Summary.value,
+        SpoilerTag: reviewData.SpoilerTag.value,
+      });
+    });
+    response.send(parsedWriterData);
+  });
+});
