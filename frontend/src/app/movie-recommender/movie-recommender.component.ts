@@ -47,7 +47,8 @@ export class MovieRecommenderComponent implements OnInit {
   genreList = ["Action", "Adventure", "Drama", "Fantasy", "Sci-fi"];
   movieClicked = false;
   clickedMovieDetails = { id: 0 };
-
+  newGivenRating;
+  ratingGiven = false;
 
   // mouse event vars
   selectedNode = null;
@@ -98,6 +99,12 @@ export class MovieRecommenderComponent implements OnInit {
   backendCall() {
     this.commonService.movieRecommenderCall(this.movieName).pipe(take(1)).subscribe((response) => {
       console.log(response);
+    })
+  }
+
+  uploadRating(){
+    this.commonService.uploadRatings({rating : this.ratingGiven, movieId : 1 }).pipe(take(1)).subscribe((res) => {
+      this.applyFilters();
     })
   }
 

@@ -83,7 +83,12 @@
   </svg>
 
   <div *ngIf="movieClicked" style="width: 29%; height: 100%; float: right; padding: 5px; border: 2px solid black;">
-    Movie Id = {{ movieClicked ? clickedMovieDetails.id : 0}}
+    <div *ngFor="let prop of clickedMovieDetails | keyvalue" >
+      {{prop.key}} = {{prop.value}}
+    </div>
+    <br/>
+    <input [(ngModel)]="newGivenRating" name="givenRating" type="number" [disabled]="ratingGiven" />
+    <button style="margin-left: 5px;" (click)="uploadRating()" >Upload rating</button>
   </div>
 
 </ng-container>

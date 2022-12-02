@@ -70,6 +70,17 @@ export class CommonService {
     }));
   }
 
+  uploadRatings(data) : Observable<any> {
+    let headers = new HttpHeaders({
+      "Access-Control-Allow-Origin": "*",
+      'Content-Type': 'application/json'
+    });
+    let options = { headers: headers };
+    return this.http.post('', data, options).pipe(switchMap((res) => {
+      return of(res);
+    }))
+  }
+
 
   // ###123123aA
   // ibatj
