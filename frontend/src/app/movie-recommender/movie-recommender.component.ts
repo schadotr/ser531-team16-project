@@ -99,6 +99,14 @@ export class MovieRecommenderComponent implements OnInit {
 
   }
 
+  changeAndOr(event) {
+    if(event.checked){
+      this.type = 'and'
+    }else{
+      this.type = 'or'
+    }
+  }
+
 
   backendCall() {
     let url = "";

@@ -1,6 +1,7 @@
-<div>
-
+<div style="margin-left: 42%;">
+  <mat-slide-toggle [checked]="type==='and' ? true : false" (change)="changeAndOr($event)"></mat-slide-toggle> Including {{ type === 'and' ? 'all' : 'any'}} filters. (Toggle for {{ type === 'and' ? 'any' : 'all'}}).
 </div>
+<br/>
 
 <div class="float-container">
 
