@@ -1,8 +1,8 @@
 
 export const environment = {
     production: false,
-    API_GATEWAY_DOMAIN="undefined"
-    USER_DOMAIN="undefined"
-    REVIEW_SERVICE_DOMAIN="undefined"
-    MOVIE_RECOMMENDER_DOMAIN="undefined"
+    API_GATEWAY_DOMAIN:"localhost",
+    USER_DOMAIN:"localhost",
+    REVIEW_SERVICE_DOMAIN:"localhost",
+    MOVIE_RECOMMENDER_DOMAIN:"localhost"
 };

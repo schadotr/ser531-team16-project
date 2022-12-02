@@ -17,6 +17,7 @@ cd ./api-gateway && npm install && cd ..
 cd ./review-service && npm install && cd ..
 cd ./user && npm install && cd ..
 cd ./movie-recommender && npm install && cd ..
+cd ../frontend && npm install && cd .. && cd backend
 
 
-(cd ./api-gateway && npm start) & (cd ./user && npm start) & (cd ./movie-recommender && npm start) & (docker compose up --build)
+(cd ./api-gateway && npm start) & (cd ./user && npm start) & (cd ./movie-recommender && npm start) & (cd ../frontend && npm start) & (docker compose up --build)

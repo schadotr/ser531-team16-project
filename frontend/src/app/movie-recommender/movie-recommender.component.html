@@ -1,7 +1,8 @@
 <div style="margin-left: 42%;">
-  <mat-slide-toggle [checked]="type==='and' ? true : false" (change)="changeAndOr($event)"></mat-slide-toggle> Including {{ type === 'and' ? 'all' : 'any'}} filters. (Toggle for {{ type === 'and' ? 'any' : 'all'}}).
+  <mat-slide-toggle [checked]="type==='and' ? true : false" (change)="changeAndOr($event)"></mat-slide-toggle> Including
+  {{ type === 'and' ? 'all' : 'any'}} filters. (Toggle for {{ type === 'and' ? 'any' : 'all'}}).
 </div>
-<br/>
+<br />
 
 <div class="float-container">
 
@@ -87,7 +88,7 @@
     Filters
   </button>
 
-  <button mat-raised-button color="primary" (click)="backendCall()" style="margin-left: 3%;">Log out</button>
+  <button mat-raised-button color="primary" (click)="logOut()" style="margin-left: 3%;">Log out</button>
 </div>
 
 <br />
@@ -98,12 +99,12 @@
   </svg>
 
   <div *ngIf="movieClicked" style="width: 29%; height: 100%; float: right; padding: 5px; border: 2px solid black;">
-    <div *ngFor="let prop of clickedMovieDetails | keyvalue" >
+    <div *ngFor="let prop of clickedMovieDetails | keyvalue">
       {{prop.key}} = {{prop.value}}
     </div>
-    <br/>
+    <br />
     <input [(ngModel)]="newGivenRating" name="givenRating" type="number" [disabled]="ratingGiven" />
-    <button style="margin-left: 5px;" (click)="uploadRating()" >Upload rating</button>
+    <button style="margin-left: 5px;" (click)="uploadRating()">Upload rating</button>
   </div>
 
 </ng-container>

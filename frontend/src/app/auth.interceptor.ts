@@ -16,10 +16,23 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private http: HttpClient, public router: Router, private commonService: CommonService) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    if (this.commonService.routeName.includes('login')) {
+      request = request.clone({
+        setHeaders: {
+          "Access-Control-Allow-Origin": "*",
+          'Content-Type': 'application/json',
+          "Access-Control-Allow-Credentials": "true"
+        }
+      });
+      return next.handle(request);
+    }
     const authToken = this.commonService.getToken();
     request = request.clone({
       setHeaders: {
-        Authorization: "Bearer " + authToken
+        "x-auth-token": authToken,
+        "Access-Control-Allow-Origin": "*",
+        'Content-Type': 'application/json',
+        "Access-Control-Allow-Credentials": "true"
       }
     });
     return next.handle(request);

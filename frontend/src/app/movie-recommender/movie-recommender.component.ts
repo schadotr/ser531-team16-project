@@ -13,8 +13,13 @@ export class MovieRecommenderComponent implements OnInit {
 
   constructor(private commonService: CommonService, private router: Router) { }
   ngOnInit(): void {
-    if (this.commonService.token === "") {
+    if (this.commonService.token === "" && (this.commonService.getToken() === "" || this.commonService.getToken() === undefined || this.commonService.getToken() === null)) {
       this.router.navigate(['login'])
+    }
+    console.log('token', this.commonService.token, this.commonService.getToken())
+
+    if (this.commonService.getToken()) {
+      this.commonService.token = this.commonService.getToken()
     }
     // throw new Error('Method not implemented.');
   }
@@ -99,10 +104,14 @@ export class MovieRecommenderComponent implements OnInit {
 
   }
 
+  logOut() {
+    this.commonService.doLogout();
+  }
+
   changeAndOr(event) {
-    if(event.checked){
+    if (event.checked) {
       this.type = 'and'
-    }else{
+    } else {
       this.type = 'or'
     }
   }
@@ -113,47 +122,48 @@ export class MovieRecommenderComponent implements OnInit {
     let data: any = {};
 
     if (this.movieName !== '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-title";
+      url = "http://localhost:3000/api/movie/movie-by-title";
       data.movieTitle = this.movieName;
     }
     else if (this.movieName === '' && this.producerName !== '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-producer";
+      url = "http://localhost:3000/api/movie/movie-by-producer";
       data.producerName = this.producerName;
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName !== '' && this.director === '' && this.writerName === '' && this.genres.length === 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-actor";
+      url = "http://localhost:3000/api/movie/movie-by-actor";
       data.actorName = this.actorName;
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director !== '' && this.writerName === '' && this.genres.length === 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-director";
+      url = "http://localhost:3000/api/movie/movie-by-director";
       data.directorName = this.director;
 
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName !== '' && this.genres.length === 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-writer";
+      url = "http://localhost:3000/api/movie/movie-by-writer";
       data.writerName = this.writerName;
 
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && this.genres.length > 0) {
-      url = "http://api-gateway:3000/api/movie/movie-by-genre";
+      url = "http://localhost:3000/api/movie/movie-by-genre";
       data.genres = this.genres.join(',');
-
+      data.type = this.type;
 
     }
     else {
-      url = "http://api-gateway:3000/api/movie/movie-by-multiple-parameters";
+      url = "http://localhost:3000/api/movie/movie-by-multiple-parameters";
       this.movieName ? data.movieTitle = this.movieName : delete data.movieTitle;
       this.producerName ? data.producerName = this.producerName : delete data.producerName;
       this.actorName ? data.actorName = this.actorName : delete data.actorName;
       this.director ? data.directorName = this.director : delete data.directorName;
       this.writerName ? data.writerName = this.writerName : delete data.writerName;
       this.genres.length > 0 ? data.genres = this.genres.join(',') : delete data.genres;
+      data.type = this.type;
 
 
     }
 
 
-    data.type = this.type;
+
 
 
 
@@ -164,8 +174,8 @@ export class MovieRecommenderComponent implements OnInit {
     })
   }
 
-  uploadRating(){
-    this.commonService.uploadRatings({rating : this.ratingGiven, movieId : 1 }).pipe(take(1)).subscribe((res) => {
+  uploadRating() {
+    this.commonService.uploadRatings({ rating: this.ratingGiven, movieId: 1 }).pipe(take(1)).subscribe((res) => {
       this.applyFilters();
     })
   }

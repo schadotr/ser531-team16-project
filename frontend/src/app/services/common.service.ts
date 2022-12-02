@@ -20,12 +20,13 @@ export class CommonService {
   doLogout() {
     let removeToken = localStorage.removeItem('access_token');
     if (removeToken == null) {
+      this.token = '';
       this.router.navigate(['login']);
     }
   }
 
   loginSubscription(userData): Observable<any> {
-    let url = "http://api-gateway:3000/api/user/login";
+    let url = "http://localhost:3000/api/user/login";
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -70,7 +71,7 @@ export class CommonService {
     }));
   }
 
-  uploadRatings(data) : Observable<any> {
+  uploadRatings(data): Observable<any> {
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
