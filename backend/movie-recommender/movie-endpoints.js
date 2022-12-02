@@ -242,8 +242,9 @@ app.get('/movie-by-writer', (request, response) => {
 });
 
 app.get('/movie-by-multiple-parameters', (request, response) => {
+  var isFirst = true;
   const movieTitle = request.query.movieTitle;
-  const genreList = request.query.genres;
+  var genreList = request.query.genres;
   const actorName = request.query.actorName;
   const directorName = request.query.directorName;
   const producerName = request.query.producerName;
@@ -279,7 +280,8 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
       FILTER(?Title = "${movieTitle}").}`;
 
   if (movieTitle) {
-    myQuery.concat(movieQuery);
+    isFirst = false;
+    myQuery = myQuery.concat(movieQuery);
   }
 
   if (genreList) {
@@ -308,8 +310,11 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?movID mov:hasSecondaryTitle ?st.
     ?st mov:isSecondaryTitle ?OriginalTitle.
   } ORDER BY DESC(?Year) LIMIT 1000`;
-    myQuery.concat(type);
-    myQuery.concat(genreQuery);
+    if (!isFirst) {
+      myQuery = myQuery.concat(type);
+    }
+    isFirst = false;
+    myQuery = myQuery.concat(genreQuery);
   }
   var actorQuery = `{
     ?movID a mov:MovieID.
@@ -337,8 +342,11 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
       FILTER(?mid = ?Movieid).
     }`
   if (actorName) {
-    myQuery.concat(type);
-    myQuery.concat(actorQuery);
+    if (!isFirst) {
+      myQuery = myQuery.concat(type);
+    }
+    isFirst = false;
+    myQuery = myQuery.concat(actorQuery);
   }
   var directorQuery = `{
     ?movID a mov:MovieID.
@@ -366,8 +374,11 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     FILTER(?mid = ?Movieid).
   }`
   if (directorName) {
-    myQuery.concat(type);
-    myQuery.concat(directorQuery);
+    if (!isFirst) {
+      myQuery = myQuery.concat(type);
+    }
+    isFirst = false;
+    myQuery = myQuery.concat(directorQuery);
   }
   var producerQuery = `{
     ?movID a mov:MovieID.
@@ -395,8 +406,11 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     FILTER(?mid = ?Movieid).
   }`
   if (producerName) {
-    myQuery.concat(type);
-    myQuery.concat(producerQuery);
+    if (!isFirst) {
+      myQuery = myQuery.concat(type);
+    }
+    isFirst = false;
+    myQuery = myQuery.concat(producerQuery);
   }
   var writerQuery = `{
     ?movID a mov:MovieID.
@@ -424,14 +438,17 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     FILTER{?wriID wri : hasWritten ?MovieID}.
   }`
   if (writerName != undefined) {
-
+    if (!isFirst) {
+      myQuery = myQuery.concat(type);
+    }
+    isFirst = false;
     myQuery = myQuery.concat(writerQuery);
   }
   myQuery = myQuery.concat(`} ORDER BY(?Title) LIMIT 5000`);
   var query = querystring.stringify({
     "query": `${myQuery}`
   });
-  console.log(myQuery);
+  console.log(query)
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/all-data/?` + query }, function (error, res, body) {
     return response.send(body);
   });
