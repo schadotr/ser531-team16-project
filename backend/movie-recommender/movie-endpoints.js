@@ -683,6 +683,6 @@ app.get('/reviews-by-movie', (request, response) => {
         SpoilerTag: reviewData.SpoilerTag.value,
       });
     });
-    response.send(parsedWriterData);
+    response.send(parsedReviewData);
   });
 });
