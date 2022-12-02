@@ -95,6 +95,7 @@ function callToFuseki(response, query, fusekiDatabase) {
           rating: movieData.Rating.value,
           votes: parseInt(movieData.Votes.value),
           isAdult: movieData.Adult.value == 0 ? false : true,
+          movieid: movieData.Movieid.value,
         });
       });
       parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
@@ -105,7 +106,7 @@ function callToFuseki(response, query, fusekiDatabase) {
 
 app.get('/movie-by-title', (request, response) => {
   const movieTitle = request.query.movieTitle;
-  var query = querystring.stringify({ "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#> SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE { ?movID a mov:MovieID. ?movID mov:hasPrimaryTitle ?pt. ?pt mov:isPrimaryTitle ?Title. FILTER(STRSTARTS(?Title , "${movieTitle}"^^xsd:string)). ?movID mov:hasGenre ?g. ?g mov:isGenre ?Genre. ?movID mov:isAdult ?Adult. ?movID mov:hasReleaseYear ?ry. ?ry mov:isReleaseYear ?Year. ?movID mov:hasRating ?R. ?R mov:isRating ?Rating. ?movID mov:hasRunTime ?rt. ?rt mov:isRunTime ?RunTime. ?movID mov:hasVotes ?v. ?v mov:isVotes ?Votes. ?movID mov:hasSecondaryTitle ?st. ?st mov:isSecondaryTitle ?OriginalTitle. } ORDER BY DESC(?Rating) LIMIT 100` });
+  var query = querystring.stringify({ "query": `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#> SELECT ?Title ?Year ?Movieid ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE { ?movID a mov:MovieID. ?movID mov:isMovieID ?Movieid. ?movID mov:hasPrimaryTitle ?pt. ?pt mov:isPrimaryTitle ?Title. FILTER(STRSTARTS(?Title , "${movieTitle}"^^xsd:string)). ?movID mov:hasGenre ?g. ?g mov:isGenre ?Genre. ?movID mov:isAdult ?Adult. ?movID mov:hasReleaseYear ?ry. ?ry mov:isReleaseYear ?Year. ?movID mov:hasRating ?R. ?R mov:isRating ?Rating. ?movID mov:hasRunTime ?rt. ?rt mov:isRunTime ?RunTime. ?movID mov:hasVotes ?v. ?v mov:isVotes ?Votes. ?movID mov:hasSecondaryTitle ?st. ?st mov:isSecondaryTitle ?OriginalTitle. } ORDER BY DESC(?Rating) LIMIT 100` });
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/movie-management/?` + query }, function (error, res, body) {
     var movieDetails = JSON.parse(body).results.bindings;
     var parsedMovieData = [];
@@ -118,6 +119,7 @@ app.get('/movie-by-title', (request, response) => {
         rating: movieData.Rating.value,
         votes: parseInt(movieData.Votes.value),
         isAdult: movieData.Adult.value == 0 ? false : true,
+        movieid: movieData.Movieid.value,
       });
     });
     parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
@@ -146,8 +148,9 @@ app.get('/movie-by-genre', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
-    SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE {
+    SELECT ?Title ?Year ?Movieid ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE {
       ?movID a mov:MovieID.
+      ?movID mov:isMovieID ?Movieid.
       ?movID mov:hasPrimaryTitle ?pt.
       ?pt mov:isPrimaryTitle ?Title.
       ${queryList}
@@ -175,6 +178,7 @@ app.get('/movie-by-genre', (request, response) => {
         rating: movieData.Rating.value,
         votes: parseInt(movieData.Votes.value),
         isAdult: movieData.Adult.value == 0 ? false : true,
+        movieid: movieData.Movieid.value,
       });
     });
     // console.log('parsedMovieData', parsedMovieData)
@@ -276,7 +280,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   PREFIX dir: <http://www.semanticweb.org/ser531-team16/director#>
   PREFIX prod: <http://www.semanticweb.org/ser531-team16/producer#>
   PREFIX wri: <http://www.semanticweb.org/ser531-team16/writer#>
-  SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE { `
+  SELECT ?Title ?Year ?Movieid ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE { `
   var movieQuery = `
     {?movID a mov:MovieID.
     ?movID mov:isMovieID ?Movieid. 
@@ -313,6 +317,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     generQueryList = generQueryList.join([separator = ' UNION ']);
     genreQuery = `{
     ?movID a mov:MovieID.
+    ?movID mov:isMovieID ?Movieid.
     ?movID mov:hasPrimaryTitle ?pt.
     ?pt mov:isPrimaryTitle ?Title.
     ${generQueryList}
@@ -368,7 +373,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   }
   var directorQuery = `{
     ?movID a mov:MovieID.
-  ?movID mov:isMovieID ?Movieid. 
+    ?movID mov:isMovieID ?Movieid. 
   ?movID mov:hasPrimaryTitle ?pt.
   ?pt mov:isPrimaryTitle ?Title.
   ?movID mov:hasGenre ?g.
@@ -511,6 +516,7 @@ app.get('/movie-by-rating', (request, response) => {
         rating: parseInt(movieData.Rating.value),
         votes: movieData.Votes.value,
         isAdult: movieData.Adult.value == 0 ? false : true,
+        movieid: movieData.MovieID.value,
       });
     });
     response.send(parsedMovieData);
