@@ -18,6 +18,18 @@
 
   <div class='float-child'>
     <div class="row-parent">
+      <mat-checkbox class="row-child" [(ngModel)]="writerNameChbox" name="writerNameChbox"
+        (ngModelChange)="checkUncheck('writerName', writerNameChbox)">Writer name</mat-checkbox>
+      <mat-form-field class="row-child">
+        <mat-label>Writer</mat-label>
+        <input matInput name="writerName" placeholder="Enter writer name" [(ngModel)]="writerName"
+          [disabled]="!writerNameChbox" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class='float-child'>
+    <div class="row-parent">
       <mat-checkbox class="row-child" [(ngModel)]="directorChbox" name="directorChbox"
         (ngModelChange)="checkUncheck('director', directorChbox)">Director name</mat-checkbox>
       <mat-form-field class="row-child">
@@ -68,11 +80,13 @@
 
 </div>
 
-<div style="position: absolute; left : 45%">
+<div style="position: relative; left : 37%">
   <button mat-raised-button color="primary" (click)="backendCall()"
     [disabled]="(!actorNameChbox || actorName === '') && (!directorChbox || director === '') && (!movieNameChbox || movieName === '') && (!producerChbox || producerName === '') && (!genreChbox || !genres.length)">Apply
     Filters
   </button>
+
+  <button mat-raised-button color="primary" (click)="backendCall()" style="margin-left: 3%;">Log out</button>
 </div>
 
 <br />
@@ -83,6 +97,7 @@
   </svg>
 
   <div *ngIf="movieClicked" style="width: 29%; height: 100%; float: right; padding: 5px; border: 2px solid black;">
+    <div></div>
     Movie Id = {{ movieClicked ? clickedMovieDetails.id : 0}}
   </div>
 
