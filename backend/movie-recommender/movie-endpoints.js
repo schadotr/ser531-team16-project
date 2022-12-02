@@ -310,8 +310,10 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?st mov:isSecondaryTitle ?OriginalTitle.
       ?actID a act:ActorID.
       ?actID act:hasPrimaryName "${actorName}"^^xsd:string.
+      ?actID act:hasActedIn ?M.
+      ?M act:hasMovieID ?mid.
       ?actID act:knownFor ?knownfor1.
-      FILTER(CONTAINS(?knownfor1,?Movieid)).
+      FILTER(?mid = ?Movieid).
     }`
   if (actorName) {
     myQuery.concat(type);
@@ -336,9 +338,11 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   ?movID mov:hasSecondaryTitle ?st.
   ?st mov:isSecondaryTitle ?OriginalTitle.
     ?dirID a dir:DirectorID.
-    ?dirID dir:hasPrimaryName "${directorName}"^^xsd:string. 
+    ?dirID dir:hasPrimaryName "${directorName}"^^xsd:string.
+    ?dirID dir:hasDirected ?M.
+    ?M dir:hasMovieID ?mid.
     ?dirID dir:knownFor ?knownfor2.
-    FILTER(CONTAINS(?knownfor2,?Movieid)).
+    FILTER(?mid = Movieid).
   }`
   if (directorName) {
     myQuery.concat(type);
@@ -364,8 +368,10 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   ?st mov:isSecondaryTitle ?OriginalTitle.
     ?prodID a prod:ProducerID.
     ?prodID prod:hasPrimaryName "${producerName}"^^xsd:string.
+    ?prodID prod:hasProduced ?M.
+    ?M prod:hasMovieID ?mid.
     ?prodID prod:knownFor ?knownfor3.
-    FILTER(CONTAINS(?knownfor3,?Movieid)).
+    FILTER(?mid = ?Movieid).
   }`
   if (producerName) {
     myQuery.concat(type);
@@ -391,8 +397,10 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   ?st mov:isSecondaryTitle ?OriginalTitle.
     ?wriID a wri:WriterID.
     ?wriID wri:hasPrimaryName "${writerName}"^^xsd:string.
+    ?wriID wri:hasWritten ?M.
+    ?M wri:hasMovieID ?mid.
     ?wriID wri:knownFor ?knownfor4.
-    FILTER(CONTAINS(?knownfor4,?Movieid)).
+    FILTER(?mid = ?Movieid).
   }`
   if (writerName) {
     myQuery.concat(type);
