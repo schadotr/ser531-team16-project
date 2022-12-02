@@ -46,7 +46,7 @@ export class CommonService {
     }));
   }
 
-  movieRecommenderCall(URL, userData): Observable<any> {
+  movieRecommenderCall(URL, userData, extra?): Observable<any> {
     debugger;
     let url = URL;
     let headers = new HttpHeaders({
@@ -78,6 +78,20 @@ export class CommonService {
     });
     let options = { headers: headers };
     return this.http.post('', data, options).pipe(switchMap((res) => {
+      return of(res);
+    }))
+  }
+
+  getMovieDetails(url, data): Observable<any> {
+    let headers = new HttpHeaders({
+      "Access-Control-Allow-Origin": "*",
+      'Content-Type': 'application/json',
+      "Access-Control-Allow-Credentials": "true",
+      "x-auth-token": this.token
+    });
+    let params = { 'movieTitle': data }
+    let options = { headers: headers, params: params };
+    return this.http.get(url, options).pipe(switchMap((res) => {
       return of(res);
     }))
   }

@@ -4,7 +4,7 @@ const ROUTES = [
         auth: false,
         rateLimit: {
             windowMs: 15 * 60 * 1000,
-            max: 5
+            max: 1000
         },
         proxy: {
             target: `http://${process.env.USER_DOMAIN}:8080`,
@@ -19,7 +19,7 @@ const ROUTES = [
         auth: true,
         rateLimit: {
             windowMs: 15 * 60 * 1000,
-            max: 5
+            max: 10000
         },
         proxy: {
             target: `http://${process.env.MOVIE_RECOMMENDER_DOMAIN}:8081`,

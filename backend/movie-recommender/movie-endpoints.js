@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const requestObject = require('request');
 var querystring = require('querystring');
 const cors = require('cors');
+const { string } = require('joi');
 app.use(expressObject.json());
 
 dotenv.config();
@@ -84,7 +85,7 @@ function callToFuseki(response, query, fusekiDatabase) {
     var details = JSON.parse(body).results.bindings;
     getMovieDetails(details, (movieDetails) => {
       var parsedMovieData = [];
-      movieDetails = movieDetails.results.bindings;
+      // movieDetails = movieDetails.results.bindings;
       movieDetails.forEach(movieData => {
         parsedMovieData.push({
           title: movieData.Title.value,
@@ -92,11 +93,12 @@ function callToFuseki(response, query, fusekiDatabase) {
           genres: movieData.Genre.value,
           runtime: movieData.RunTime.value,
           rating: movieData.Rating.value,
-          votes: movieData.Votes.value,
+          votes: parseInt(movieData.Votes.value),
           isAdult: movieData.Adult.value == 0 ? false : true,
         });
       });
-      response.send(parsedMovieData);
+      parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
+      response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
     });
   });
 }
@@ -114,11 +116,12 @@ app.get('/movie-by-title', (request, response) => {
         genres: movieData.Genre.value,
         runtime: movieData.RunTime.value,
         rating: movieData.Rating.value,
-        votes: movieData.Votes.value,
+        votes: parseInt(movieData.Votes.value),
         isAdult: movieData.Adult.value == 0 ? false : true,
       });
     });
-    response.send(parsedMovieData);
+    parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
+    response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
   });
 });
 
@@ -131,7 +134,7 @@ app.get('/movie-by-genre', (request, response) => {
   genreList.forEach((genre) => {
     queryList.push(`{?movID mov:hasGenre ?g.
         ?g mov:isGenre ?Genre.
-        FILTER(CONTAINS(lcase(str(?Genre)), "${genre}"^^xsd:string)).}`)
+        FILTER(CONTAINS(lcase(str(?Genre)), "${genre.toLowerCase(0)}"^^xsd:string)).}`)
   });
   if (typeOfQuery == 'or') {
     queryList = queryList.join([separator = ' UNION ']);
@@ -143,7 +146,7 @@ app.get('/movie-by-genre', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
-    SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE {
+    SELECT ?Title ?Year ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE {
       ?movID a mov:MovieID.
       ?movID mov:hasPrimaryTitle ?pt.
       ?pt mov:isPrimaryTitle ?Title.
@@ -161,7 +164,22 @@ app.get('/movie-by-genre', (request, response) => {
       ?st mov:isSecondaryTitle ?OriginalTitle.
     } ORDER BY DESC(?Year) LIMIT 1000`});
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/movie-management/?` + query }, function (error, res, body) {
-    return response.send(body);
+    var movieDetails = JSON.parse(body).results.bindings;
+    var parsedMovieData = [];
+    movieDetails.forEach(movieData => {
+      parsedMovieData.push({
+        title: movieData.Title.value,
+        year: movieData.Year.value,
+        genres: movieData.Genre.value,
+        runtime: movieData.RunTime.value,
+        rating: movieData.Rating.value,
+        votes: parseInt(movieData.Votes.value),
+        isAdult: movieData.Adult.value == 0 ? false : true,
+      });
+    });
+    // console.log('parsedMovieData', parsedMovieData)
+    parsedMovieData = parsedMovieData.sort((a, b) => a.votes < b.votes ? 1 : -1);
+    response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
   });
 });
 
@@ -461,7 +479,7 @@ app.get('/movie-by-rating', (request, response) => {
   PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   PREFIX mov: <http://www.semanticweb.org/ser531-team16/movie#>
-  SELECT ?Title ?Year ?MovieID ?Genre ?RunTime ?Rating ?Votes ?OriginalTitle WHERE {
+  SELECT ?Title ?Year ?MovieID ?Genre ?RunTime ?Rating ?Votes ?Adult ?OriginalTitle WHERE {
     ?movID a mov:MovieID.
     ?movID mov:isMovieID ?MovieID.
     ?movID mov:hasPrimaryTitle ?pt.
@@ -490,7 +508,7 @@ app.get('/movie-by-rating', (request, response) => {
         year: movieData.Year.value,
         genres: movieData.Genre.value,
         runtime: movieData.RunTime.value,
-        rating: movieData.Rating.value,
+        rating: parseInt(movieData.Rating.value),
         votes: movieData.Votes.value,
         isAdult: movieData.Adult.value == 0 ? false : true,
       });

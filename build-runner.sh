@@ -20,4 +20,4 @@ cd ./movie-recommender && npm install && cd ..
 cd ../frontend && npm install && cd .. && cd backend
 
 
-(cd ./api-gateway && npm start) & (cd ./user && npm start) & (cd ./movie-recommender && npm start) & (cd ../frontend && npm start) & (docker compose up --build)
+(cd ./api-gateway && nodemon gateway.js) & (cd ./user && nodemon login-registration.js) & (cd ./movie-recommender && nodemon movie-endpoints.js) & (cd ../frontend && npm start) & (docker compose up --build)

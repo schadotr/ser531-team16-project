@@ -22,6 +22,9 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.commonService.routeName = 'login';
+    if (this.commonService.getToken() !== null) {
+      this.router.navigate(['recommender'])
+    }
   }
 
   ngAfterViewInit() {

@@ -44,6 +44,18 @@
 
   <div class='float-child'>
     <div class="row-parent">
+      <mat-checkbox class="row-child" [(ngModel)]="ratingChbox" name="ratingChbox"
+        (ngModelChange)="checkUncheck('selectedRating', ratingChbox)">Rating</mat-checkbox>
+      <mat-form-field class="row-child">
+        <mat-label>Rating</mat-label>
+        <input matInput name="ratings" type="number" min="0" max="10" placeholder="Enter ratings"
+          [(ngModel)]="selectedRating" [disabled]="!ratingChbox" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class='float-child'>
+    <div class="row-parent">
       <mat-checkbox class="row-child" [(ngModel)]="movieNameChbox" name="movieNameChbox"
         (ngModelChange)="checkUncheck('movieName', movieNameChbox)">Movie name</mat-checkbox>
       <mat-form-field class="row-child">
@@ -84,7 +96,7 @@
 
 <div style="position: relative; left : 37%">
   <button mat-raised-button color="primary" (click)="backendCall()"
-    [disabled]="(!actorNameChbox || actorName === '') && (!directorChbox || director === '') && (!movieNameChbox || movieName === '') && (!producerChbox || producerName === '') && (!genreChbox || !genres.length)">Apply
+    [disabled]="(!actorNameChbox || actorName === '') && (!writerNameChbox || writerName === '') && (!ratingChbox || selectedRating === null || selectedRating === undefined || selectedRating > 10 || selectedRating < 0 ) && (!directorChbox || director === '') && (!movieNameChbox || movieName === '') && (!producerChbox || producerName === '') && (!genreChbox || !genres.length)">Apply
     Filters
   </button>
 
