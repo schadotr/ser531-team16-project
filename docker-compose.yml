@@ -16,7 +16,11 @@ services:
     networks:
       - microservice
   # rabbitmq:
-  #   image: 'rabbitmq:latest'
+  #   image: 'rabbitmq:3-management-alpine'
+  #   container_name: 'rabbitmq'
+  #   volumes:
+  #     - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+  #     - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
   #   ports:
   #     - '5672:5672'
   #     - '15672:15672'
@@ -72,6 +76,8 @@ services:
   #     context: ./backend
   #     dockerfile: ./ml-model/ml-script/Dockerfile
   #   container_name: ml-model
+  #   volumes:
+  #     - ./backend/ml-model/model:/ml-model/model
   #   networks:
   #     - microservice
   # predict-review:
@@ -79,6 +85,8 @@ services:
   #     context: ./backend
   #     dockerfile: ./ml-model/predict-sentiment/Dockerfile
   #   container_name: predict-review
+  #   volumes:
+  #     - ./backend/ml-model/model:/ml-model/model
   #   networks:
   #     - microservice
   # frontend:

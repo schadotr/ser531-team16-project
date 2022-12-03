@@ -249,8 +249,11 @@ export class MovieRecommenderComponent implements OnInit {
   }
 
   uploadRating() {
-    this.commonService.uploadRatings({ rating: this.ratingGiven, movieId: 1 }).pipe(take(1)).subscribe((res) => {
-      this.applyFilters();
+    this.ratingGiven = true;
+    this.clickedMovieDetails['Your review'] = this.newGivenRating;
+    this.commonService.uploadRatings({ review: this.newGivenRating, movieId: this.clickedMovieDetails.movieid }).pipe(take(1)).subscribe((res) => {
+      console.log("Review posted")
+      // this.applyFilters();
     })
   }
 
@@ -514,9 +517,8 @@ export class MovieRecommenderComponent implements OnInit {
     this.svg.classed('active', true);
     const point = d3.mouse(d3.event.currentTarget);
     if (this.mousedownNode) {
-      this.movieClicked = true;
       this.clickedMovieDetails = {};
-      // this.setClickedMovieDetails(this.mousedownNode.title);
+      this.setClickedMovieDetails(this.mousedownNode.title);
     }
 
     // if (d3.event.ctrlKey || this.mousedownNode || this.mousedownLink) return;
@@ -528,49 +530,86 @@ export class MovieRecommenderComponent implements OnInit {
         data.type = this.type;
         let mousenodeTitle = this.mousedownNode.title;
         let mouseNodeTemp = this.mousedownNode;
-
-        // this.commonService.getMovieDetails('', mousenodeTitle).pipe(take(1)).subscribe((res1) => {
-        //   this.clickedMovieDetails.Title = mousenodeTitle;
-        //   this.clickedMovieDetails.Title
-        // })
-        this.commonService.movieRecommenderCall('http://localhost:3000/api/movie/movie-by-genre', data, false).pipe(take(1)).subscribe((res) => {
-          console.log('not iterable', res)
-          let cnt = 0;
-          for (let movie of res) {
-            if (cnt > 9) {
-              break;
-            }
-            if (this.nodes.filter((node) => node.title === movie.title).length === 0) {
-              this.nodes.push(movie);
-              if (movie.title !== mouseNodeTemp.title && (!this.pastLinks[mousenodeTitle] || this.pastLinks[mousenodeTitle].indexOf(movie.title) === -1)) {
-                this.links.push({
-                  source: mouseNodeTemp,
-                  target: movie,
-                  left: false,
-                  right: true
-                })
-              }
-
-              if (!this.pastLinks[movie.title]) {
-                this.pastLinks[movie.title] = [];
-              }
-              if (movie.title !== mouseNodeTemp.title) {
-                this.pastLinks[movie.title].push(mousenodeTitle)
-                if (this.pastLinks[mousenodeTitle]) {
-                  this.pastLinks[movie.title] = this.pastLinks[movie.title].concat(this.pastLinks[mousenodeTitle]);
-                }
-              }
-
-              cnt++;
-
-            }
-
+        let movieId = this.mousedownNode.movieid;
+        console.log('movieid', movieId)
+        this.commonService.getMovieDetails('http://localhost:3000/api/movie/actors-by-movie', movieId).pipe(take(1)).subscribe((res1) => {
+          let arr = []
+          console.log('res1', res1)
+          for (let a of res1) {
+            arr.push(a.Name);
           }
-          this.visited[mouseNodeTemp.title] = true;
+          console.log('arr', arr)
+          this.clickedMovieDetails.Actors = arr.join(', ');
+          this.commonService.getMovieDetails('http://localhost:3000/api/movie/directors-by-movie', movieId).pipe(take(1)).subscribe((res2) => {
+            let arr = []
+            for (let a of res2) {
+              arr.push(a.Name);
+            }
+            this.clickedMovieDetails.Directors = arr.join(', ');
+            this.commonService.getMovieDetails('http://localhost:3000/api/movie/producers-by-movie', movieId).pipe(take(1)).subscribe((res3) => {
+              let arr = []
+              for (let a of res3) {
+                arr.push(a.Name);
+              }
+              this.clickedMovieDetails.Producers = arr.join(', ');
+              this.commonService.getMovieDetails('http://localhost:3000/api/movie/writers-by-movie', movieId).pipe(take(1)).subscribe((res4) => {
+                let arr = []
+                for (let a of res4) {
+                  arr.push(a.Name);
+                }
+                this.clickedMovieDetails.Writers = arr.join(', ');
+                this.commonService.getMovieDetails('http://localhost:3000/api/movie/reviews-by-movie', movieId).pipe(take(1)).subscribe((res5) => {
+                  let arr = {}
+                  for (let a of res5) {
+                    arr[a.Reviewer] = a;
+                  }
+                  this.clickedMovieDetails.Reviews = arr;
+                  this.movieClicked = true;
 
-          this.restart();
 
+                  this.commonService.movieRecommenderCall('http://localhost:3000/api/movie/movie-by-genre', data, false).pipe(take(1)).subscribe((res) => {
+                    console.log('not iterable', res)
+                    let cnt = 0;
+                    for (let movie of res) {
+                      if (cnt > 9) {
+                        break;
+                      }
+                      if (this.nodes.filter((node) => node.title === movie.title).length === 0) {
+                        this.nodes.push(movie);
+                        if (movie.title !== mouseNodeTemp.title && (!this.pastLinks[mousenodeTitle] || this.pastLinks[mousenodeTitle].indexOf(movie.title) === -1)) {
+                          this.links.push({
+                            source: mouseNodeTemp,
+                            target: movie,
+                            left: false,
+                            right: true
+                          })
+                          cnt++;
+                        }
+
+                        if (!this.pastLinks[movie.title]) {
+                          this.pastLinks[movie.title] = [];
+                        }
+                        if (movie.title !== mouseNodeTemp.title) {
+                          this.pastLinks[movie.title].push(mousenodeTitle)
+                          if (this.pastLinks[mousenodeTitle]) {
+                            this.pastLinks[movie.title] = this.pastLinks[movie.title].concat(this.pastLinks[mousenodeTitle]);
+                          }
+                        }
+
+                      }
+
+                    }
+                    this.visited[mouseNodeTemp.title] = true;
+
+                    this.restart();
+
+                  })
+                })
+              })
+            })
+          })
         })
+
       }
       else {
         this.movieClicked = true;

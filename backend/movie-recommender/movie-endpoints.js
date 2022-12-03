@@ -99,7 +99,7 @@ function callToFuseki(response, query, fusekiDatabase) {
         });
       });
       parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
-      response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
+      response.send(parsedMovieData);
     });
   });
 }
@@ -123,7 +123,7 @@ app.get('/movie-by-title', (request, response) => {
       });
     });
     parsedMovieData = parsedMovieData.sort((a, b) => a.votes > b.votes ? -1 : 1);
-    response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
+    response.send(parsedMovieData);
   });
 });
 
@@ -183,7 +183,7 @@ app.get('/movie-by-genre', (request, response) => {
     });
     // console.log('parsedMovieData', parsedMovieData)
     parsedMovieData = parsedMovieData.sort((a, b) => a.votes < b.votes ? 1 : -1);
-    response.send(parsedMovieData.length > 10 ? parsedMovieData.slice(0, 10) : parsedMovieData);
+    response.send(parsedMovieData);
   });
 });
 
@@ -587,7 +587,7 @@ app.get('/directors-by-movie', (request, response) => {
     var parsedDirectorData = [];
     directorDetails.forEach(directorData => {
       parsedDirectorData.push({
-        DirectorID: directorData.ActorID.value,
+        DirectorID: directorData.DirectorID.value,
         Name: directorData.Name.value,
         BirthYear: directorData.BirthYear.value,
         Professions: directorData.Professions.value,
@@ -645,7 +645,7 @@ app.get('/writers-by-movie', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX wri: <http://www.semanticweb.org/ser531-team16/writer#>
-    SELECT DISTINCT ?ProducerID ?Name ?BirthYear ?knownfor ?Professions WHERE {
+    SELECT DISTINCT ?WriterID ?Name ?BirthYear ?knownfor ?Professions WHERE {
       ?wriID a wri:WriterID.
       ?wriID wri:hasID ?WriterID.
       ?wriID wri:hasPrimaryName ?Name.

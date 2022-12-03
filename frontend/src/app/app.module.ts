@@ -16,6 +16,7 @@ import { MovieRecommenderComponent } from './movie-recommender/movie-recommender
 import { AppRoutingModule } from './app-routing.module';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthInterceptor } from './auth.interceptor';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import { AuthInterceptor } from './auth.interceptor';
     MatSelectModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatTooltipModule
   ],
   exports: [
     BrowserAnimationsModule,

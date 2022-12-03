@@ -13,12 +13,15 @@ export class LoginComponent implements OnInit {
   constructor(public commonService: CommonService, public router: Router) { }
 
   otpVerification = false;
+  name = "";
+  email = "";
   userName = "";
   password = "";
   sUserName = "";
   sPassword = "";
   confirmSPassword = "";
   loading = false;
+  otp = "";
 
   ngOnInit(): void {
     this.commonService.routeName = 'login';
@@ -64,11 +67,36 @@ export class LoginComponent implements OnInit {
   }
 
   finalSignUp() {
+    this.commonService.emailSubscription({ "email": this.email }).pipe(take(1)).subscribe((response) => {
+      // console.log('hheelloo');
+      // this.router.navigate(['recommender'])
+      if (response) {
+        this.commonService.userNameSubscription({ "username": this.sUserName }).pipe(take(1)).subscribe((response2) => {
+          if (response2) {
+            this.otpVerification = true;
+            this.commonService.generateOtp({ "email": this.email }).pipe(take(1)).subscribe((response3) => {
+              if (response3) {
+                console.log("otp sent to email")
+              }
+            })
+          }
+        })
+      }
+    })
     // fetch('http:')
   }
 
   finalValidate() {
-
+    this.loading = true;
+    this.commonService.checkOTP({ "email": this.email, 'otp': this.otp }).pipe(take(1)).subscribe((response2) => {
+      if (response2) {
+        this.commonService.finalSignup({ "email": this.email, 'username': this.sUserName, "password": this.sPassword, "name": this.name }).pipe(take(1)).subscribe((response3) => {
+          if (response3) {
+            this.router.navigate(['recommender']);
+          }
+        })
+      }
+    })
   }
 
 }

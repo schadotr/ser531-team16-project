@@ -40,7 +40,7 @@ console.log("Server is listening port 8080 !!!!");
 
 
 app.get('/check-email', (request, response) => {
-    const email = request.body.email;
+    const email = request.query.email;
     User.find({ email: email }, (err, emailList) => {
         if (err) {
             return response.send({ message: "Error" });
@@ -55,7 +55,7 @@ app.get('/check-email', (request, response) => {
 });
 
 app.get('/check-username', (request, response) => {
-    const username = request.body.username;
+    const username = request.query.username;
     User.find({ username: username }, (err, usernameList) => {
         if (err) {
             return response.send({ message: "error" });
@@ -83,11 +83,13 @@ app.post('/create-otp', (request, response) => {
                     return response.send({ message: "error" });
                 }
                 else {
-                    const mailRequest = {
-                        otp: otpString,
-                        email: email
-                    }
-                    sendToQueue('mailer', mailRequest);
+                    var mailOptions = {
+                        from: process.env.SERVER_MAIL_ID,
+                        to: email,
+                        subject: 'Welcome to Movie Management',
+                        text: 'For the first login use the given OTP : ' + otpString
+                    };
+                    sendToQueue('mailer', mailOptions);
                     var otp = new Otp({
                         email: email,
                         otp: hash
@@ -166,7 +168,7 @@ app.post('/signup', (request, response) => {
                                 return response.send({ message: "error" });
                             }
                         });
-                        return response.send("ok");
+                        return response.send({ message: "ok" });
                     }
                 });
             }

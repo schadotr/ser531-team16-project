@@ -47,9 +47,8 @@ def run_model():
     mnb = MultinomialNB()
     mnb_bow = mnb.fit(cv_train_reviews, train_sentiments)
     mnb_tfidf = mnb.fit(tv_train_reviews, train_sentiments)
-
     pickle.dump(
-        mnb, open(os.path.join(os.path.pardir, model_filename), "wb")
+        mnb, open(os.path.join(os.path.curdir, "model", model_filename), "wb")
     )
 
     mnb_bow_predict = mnb.predict(cv_test_reviews)
@@ -112,7 +111,4 @@ def remove_stopwords(text, is_lower_case=False):
     filtered_text = " ".join(filtered_tokens)
     return filtered_text
 
-
-if __name__ == "__main__":
-    
-    run_model()
+run_model()

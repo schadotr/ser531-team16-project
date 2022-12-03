@@ -36,3 +36,10 @@ backend/movie-recommender/middleware
 backend/movie-recommender/models
 backend/movie-recommender/queue
 backend/movie-recommender/.env
+
+backend/mailer-service/db
+backend/mailer-service/log
+backend/mailer-service/middleware
+backend/mailer-service/models
+backend/mailer-service/queue
+backend/mailer-service/.env
