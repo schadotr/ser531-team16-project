@@ -11,13 +11,16 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import os
 import warnings
-import pickle
+import json
+import sys
+import pika
+import random
 
 warnings.filterwarnings("ignore")
 from sklearn.utils import shuffle
 
 model_filename = "mn_model.sav"
-
+mnb = MultinomialNB()
 
 def run_model():
     imdb_data = pd.read_csv(os.path.join(os.path.dirname(__file__), "IMDB_Dataset.csv"))
@@ -47,9 +50,6 @@ def run_model():
     mnb = MultinomialNB()
     mnb_bow = mnb.fit(cv_train_reviews, train_sentiments)
     mnb_tfidf = mnb.fit(tv_train_reviews, train_sentiments)
-    pickle.dump(
-        mnb, open(os.path.join(os.path.curdir, "model", model_filename), "wb")
-    )
 
     mnb_bow_predict = mnb.predict(cv_test_reviews)
     mnb_tfidf_predict = mnb.predict(tv_test_reviews)
@@ -111,4 +111,28 @@ def remove_stopwords(text, is_lower_case=False):
     filtered_text = " ".join(filtered_tokens)
     return filtered_text
 
-run_model()
+
+
+def main():
+    # run_model()
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='review')
+    def callback(ch, method, properties, body):
+        my_json = body.decode('utf8').replace("'", '"')
+        data = json.loads(my_json)
+        predict = random.uniform(0, 1)
+        run_model()
+        
+    channel.basic_consume(queue='review', on_message_callback=callback, auto_ack=True)
+    channel.start_consuming()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)

@@ -27,7 +27,7 @@ export class CommonService {
   }
 
   loginSubscription(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/login";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/login`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -75,10 +75,12 @@ export class CommonService {
   uploadRatings(data): Observable<any> {
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      "Access-Control-Allow-Credentials": "true",
+      "x-auth-token": this.token
     });
     let options = { headers: headers };
-    return this.http.post('http://localhost:3000/api/movie/', data, options).pipe(switchMap((res) => {
+    return this.http.post(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/review`, data, options).pipe(switchMap((res) => {
       return of(res);
     }))
   }
@@ -99,7 +101,7 @@ export class CommonService {
   }
 
   emailSubscription(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/check-email";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/check-email`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -120,7 +122,7 @@ export class CommonService {
   }
 
   userNameSubscription(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/check-username";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/check-username`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -141,7 +143,7 @@ export class CommonService {
   }
 
   finalSignup(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/signup";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/signup`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -162,7 +164,7 @@ export class CommonService {
   }
 
   generateOtp(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/create-otp";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/create-otp`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'
@@ -183,7 +185,7 @@ export class CommonService {
   }
 
   checkOTP(userData): Observable<any> {
-    let url = "http://localhost:3000/api/user/check-otp";
+    let url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/user/check-otp`;
     let headers = new HttpHeaders({
       "Access-Control-Allow-Origin": "*",
       'Content-Type': 'application/json'

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import * as d3 from 'd3';
 import { take } from 'rxjs';
 import { CommonService } from '../services/common.service';
+import { environment } from 'src/environments/environment';
 // import _ from "lodash";
 
 @Component({
@@ -129,41 +130,41 @@ export class MovieRecommenderComponent implements OnInit {
     this.pastLinks = {};
 
     if (this.movieName !== '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-title";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-title`;
       data.movieTitle = this.movieName;
     }
     else if (this.movieName === '' && this.producerName !== '' && this.actorName === '' && this.director === '' && this.writerName === '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-producer";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-producer`;
       data.producerName = this.producerName;
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName !== '' && this.director === '' && this.writerName === '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-actor";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-actor`;
       data.actorName = this.actorName;
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director !== '' && this.writerName === '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-director";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-director`;
       data.directorName = this.director;
 
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName !== '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-writer";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-writer`;
       data.writerName = this.writerName;
 
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && (this.selectedRating === null || this.selectedRating === undefined) && this.genres.length > 0) {
-      url = "http://localhost:3000/api/movie/movie-by-genre";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-genre`;
       data.genres = this.genres.join(',');
       data.type = this.type;
 
     }
     else if (this.movieName === '' && this.producerName === '' && this.actorName === '' && this.director === '' && this.writerName === '' && (this.selectedRating !== null || this.selectedRating !== undefined) && this.genres.length === 0) {
-      url = "http://localhost:3000/api/movie/movie-by-rating";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-rating`;
       data.rating = this.selectedRating;
       // data.type = this.type;
 
     }
     else {
-      url = "http://localhost:3000/api/movie/movie-by-multiple-parameters";
+      url = `http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-multiple-parameters`;
       this.movieName ? data.movieTitle = this.movieName : delete data.movieTitle;
       this.producerName ? data.producerName = this.producerName : delete data.producerName;
       this.actorName ? data.actorName = this.actorName : delete data.actorName;
@@ -532,7 +533,7 @@ export class MovieRecommenderComponent implements OnInit {
         let mouseNodeTemp = this.mousedownNode;
         let movieId = this.mousedownNode.movieid;
         console.log('movieid', movieId)
-        this.commonService.getMovieDetails('http://localhost:3000/api/movie/actors-by-movie', movieId).pipe(take(1)).subscribe((res1) => {
+        this.commonService.getMovieDetails(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/actors-by-movie`, movieId).pipe(take(1)).subscribe((res1) => {
           let arr = []
           console.log('res1', res1)
           for (let a of res1) {
@@ -540,25 +541,25 @@ export class MovieRecommenderComponent implements OnInit {
           }
           console.log('arr', arr)
           this.clickedMovieDetails.Actors = arr.join(', ');
-          this.commonService.getMovieDetails('http://localhost:3000/api/movie/directors-by-movie', movieId).pipe(take(1)).subscribe((res2) => {
+          this.commonService.getMovieDetails(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/directors-by-movie`, movieId).pipe(take(1)).subscribe((res2) => {
             let arr = []
             for (let a of res2) {
               arr.push(a.Name);
             }
             this.clickedMovieDetails.Directors = arr.join(', ');
-            this.commonService.getMovieDetails('http://localhost:3000/api/movie/producers-by-movie', movieId).pipe(take(1)).subscribe((res3) => {
+            this.commonService.getMovieDetails(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/producers-by-movie`, movieId).pipe(take(1)).subscribe((res3) => {
               let arr = []
               for (let a of res3) {
                 arr.push(a.Name);
               }
               this.clickedMovieDetails.Producers = arr.join(', ');
-              this.commonService.getMovieDetails('http://localhost:3000/api/movie/writers-by-movie', movieId).pipe(take(1)).subscribe((res4) => {
+              this.commonService.getMovieDetails(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/writers-by-movie`, movieId).pipe(take(1)).subscribe((res4) => {
                 let arr = []
                 for (let a of res4) {
                   arr.push(a.Name);
                 }
                 this.clickedMovieDetails.Writers = arr.join(', ');
-                this.commonService.getMovieDetails('http://localhost:3000/api/movie/reviews-by-movie', movieId).pipe(take(1)).subscribe((res5) => {
+                this.commonService.getMovieDetails(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/reviews-by-movie`, movieId).pipe(take(1)).subscribe((res5) => {
                   let arr = {}
                   for (let a of res5) {
                     arr[a.Reviewer] = a;
@@ -567,7 +568,7 @@ export class MovieRecommenderComponent implements OnInit {
                   this.movieClicked = true;
 
 
-                  this.commonService.movieRecommenderCall('http://localhost:3000/api/movie/movie-by-genre', data, false).pipe(take(1)).subscribe((res) => {
+                  this.commonService.movieRecommenderCall(`http://${environment.API_GATEWAY_DOMAIN}:3000/api/movie/movie-by-genre`, data, false).pipe(take(1)).subscribe((res) => {
                     console.log('not iterable', res)
                     let cnt = 0;
                     for (let movie of res) {

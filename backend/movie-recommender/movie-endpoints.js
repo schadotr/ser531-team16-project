@@ -5,9 +5,8 @@ const dotenv = require('dotenv');
 const requestObject = require('request');
 var querystring = require('querystring');
 const cors = require('cors');
-const { string } = require('joi');
+const sendToQueue = require('./queue/sender');
 app.use(expressObject.json());
-
 dotenv.config();
 
 connection();
@@ -299,7 +298,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?v mov:isVotes ?Votes.
     ?movID mov:hasSecondaryTitle ?st.
     ?st mov:isSecondaryTitle ?OriginalTitle.
-      FILTER(?Title = "${movieTitle}").}`;
+    FILTER(STRSTARTS(?Title, "${movieTitle}")).}`;
 
   if (movieTitle) {
     isFirst = false;
@@ -312,7 +311,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     genreList.forEach((genre) => {
       generQueryList.push(`{?movID mov:hasGenre ?g.
         ?g mov:isGenre ?Genre.
-        FILTER(CONTAINS(lcase(str(?Genre)), "${genre}"^^xsd:string)).}`)
+        FILTER(CONTAINS(lcase(str(?Genre)), "${genre.toLowerCase(0)}"^^xsd:string)).}`)
     });
     generQueryList = generQueryList.join([separator = ' UNION ']);
     genreQuery = `{
@@ -332,7 +331,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?v mov:isVotes ?Votes.
     ?movID mov:hasSecondaryTitle ?st.
     ?st mov:isSecondaryTitle ?OriginalTitle.
-  } ORDER BY DESC(?Year) LIMIT 1000`;
+  }`;
     if (!isFirst) {
       myQuery = myQuery.concat(type);
     }
@@ -458,7 +457,7 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
     ?wriID wri:hasWritten ?M.
     ?M wri:hasMovieID ?mid.
     ?wriID wri:knownFor ?knownfor4.
-    FILTER{?wriID wri : hasWritten ?MovieID}.
+    FILTER EXISTS{?wriID wri:hasWritten ?MovieID}.
   }`
   if (writerName != undefined) {
     if (!isFirst) {
@@ -471,9 +470,22 @@ app.get('/movie-by-multiple-parameters', (request, response) => {
   var query = querystring.stringify({
     "query": `${myQuery}`
   });
-  console.log(query)
   requestObject.post({ headers: { 'content-type': 'application/x-www-form-urlencoded', 'accept': 'application/json' }, url: `http://${process.env.FUSEKI}:3030/all-data/?` + query }, function (error, res, body) {
-    return response.send(body);
+    var movieDetails = JSON.parse(body).results.bindings;
+    var parsedMovieData = [];
+    movieDetails.forEach(movieData => {
+      parsedMovieData.push({
+        title: movieData.Title.value,
+        year: movieData.Year.value,
+        genres: movieData.Genre.value,
+        runtime: movieData.RunTime.value,
+        rating: movieData.Rating.value,
+        votes: parseInt(movieData.Votes.value),
+        movieid: movieData.Movieid.value,
+      });
+    });
+    parsedMovieData = parsedMovieData.sort((a, b) => a.votes < b.votes ? 1 : -1);
+    response.send(parsedMovieData);
   });
 });
 
@@ -709,4 +721,10 @@ app.get('/reviews-by-movie', (request, response) => {
     });
     response.send(parsedReviewData);
   });
+});
+
+app.post('/review', (request, response) => {
+  const review = request.body.review;
+  sendToQueue('review', { "review": review });
+  response.send({ "message": "ok" });
 });

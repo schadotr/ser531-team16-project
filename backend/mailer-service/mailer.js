@@ -6,7 +6,16 @@ const queueName = process.env.MAILER_QUEUE_NAME;
 const mqUrl = `amqp://${process.env.RABBIT_MQ_URL}:5672`
 
 async function consume(mqUrl, queueName, dispatchFunction) {
-    const conn = await amqplib.connect(mqUrl)
+    var conn;
+    while (true) {
+        try {
+            conn = await amqplib.connect(mqUrl);
+            break;
+        }
+        catch (err) {
+
+        }
+    }
     const channel = await conn.createChannel()
     const ok = await channel.assertQueue(queueName, { durable: false })
     setTimeout(() => {

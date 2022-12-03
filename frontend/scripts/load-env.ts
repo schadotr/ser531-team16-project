@@ -23,7 +23,6 @@ export const environment = {
     MOVIE_RECOMMENDER_DOMAIN:"${process.env.MOVIE_RECOMMENDER_DOMAIN}"
 };
 `;
-
 // write the content to the respective file
 writeFile(targetPath, environmentFileContent, function (err) {
     if (err) {
