@@ -683,11 +683,11 @@ app.get('/reviews-by-movie', (request, response) => {
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX rev: <http://www.semanticweb.org/ser531-team16/review#>
-    SELECT ?ReviewID ?Movie ?Reviewer ?Rating ?Summary ?SpoilerTag WHERE {
+    SELECT ?ReviewID ?MovieID ?Reviewer ?Rating ?Summary ?SpoilerTag WHERE {
       ?review a rev:Review.
       ?review rev:hasReviewID ?ReviewID.
-      ?review rev:hasMovieName ?Movie.
-      FILTER(CONTAINS(?Movie,"${movieID}"^^xsd:string)).
+      ?review rev:hasMovieID ?MovieID.
+      FILTER(CONTAINS(?MovieID,"${movieID}"^^xsd:string)).
       ?review rev:hasRating ?r.
       ?r rev:hasRatingValue ?Rating.
       ?review rev:hasReviewerName ?Reviewer.
@@ -700,7 +700,7 @@ app.get('/reviews-by-movie', (request, response) => {
     reviewDetails.forEach(reviewData => {
       parsedReviewData.push({
         ReviewID: reviewData.ReviewID.value,
-        MovieName: reviewData.Movie.value,
+        MovieID: reviewData.MovieID.value,
         Reviewer: reviewData.Reviewer.value,
         Rating: reviewData.Rating.value,
         Summary: reviewData.Summary.value,
